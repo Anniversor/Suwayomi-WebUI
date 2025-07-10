@@ -1,4 +1,4 @@
-/*
+'''/*
  * Copyright (C) Contributors to the Suwayomi project
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -660,3 +660,4 @@ export const METADATA_MIGRATIONS: IMetadataMigration[] = [
         ],
     },
 ];
+''
