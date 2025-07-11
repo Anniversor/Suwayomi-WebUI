@@ -71,6 +71,8 @@ import { useReaderPreserveScrollPosition } from '@/modules/reader/hooks/useReade
 
 import { ChapterIdInfo } from '@/modules/chapter/Chapter.types.ts';
 import { useSwipeNavigate } from '@/modules/reader/hooks/useSwipeNavigate.ts';
+import { SpinnerImage } from '@/modules/core/components/SpinnerImage.tsx';
+import { Priority } from '@/lib/Queue.ts';
 
 const READING_MODE_TO_IN_VIEWPORT_TYPE: Record<ReadingMode, PageInViewportType> = {
     [ReadingMode.SINGLE_PAGE]: PageInViewportType.X,
@@ -228,6 +230,7 @@ const BaseReaderViewer = forwardRef(
             swipeOffset,
             isTransitioning,
             previewPageUrl,
+            previewDirection,
             handleTouchStart,
             handleTouchMove,
             handleTouchEnd,
@@ -370,23 +373,62 @@ const BaseReaderViewer = forwardRef(
                     overflow: 'hidden',
                 }}
             >
-                {previewPageUrl && (isSwiping || isTransitioning) && (
+                {previewPageUrl && (isSwiping || isTransitioning) && swipeOffset !== 0 && (
                     <Box
                         sx={{
                             position: 'absolute',
                             top: 0,
-                            left: swipeOffset > 0 ? '-100%' : '100%',
+                            left: (() => {
+                                // 根据预览方向和阅读方向决定预览页面的初始位置
+                                if (previewDirection === 'next') {
+                                    // 下一页：在LTR模式下从右侧进入，在RTL模式下从左侧进入
+                                    return readingDirection === ReadingDirection.LTR ? '100%' : '-100%';
+                                }
+                                // 上一页：在LTR模式下从左侧进入，在RTL模式下从右侧进入
+                                return readingDirection === ReadingDirection.LTR ? '-100%' : '100%';
+                            })(),
+                            transform: (() => {
+                                const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
+                                if (previewDirection === 'next') {
+                                    // 下一页的移动方向
+                                    if (readingDirection === ReadingDirection.LTR) {
+                                        return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
+                                    }
+                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
+                                }
+                                // 上一页的移动方向
+                                if (readingDirection === ReadingDirection.LTR) {
+                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
+                                }
+                                return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
+                            })(),
                             width: '100%',
                             height: '100%',
-                            backgroundImage: `url(${previewPageUrl})`,
-                            backgroundSize: 'contain',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'center',
-                            opacity: Math.min(Math.abs(swipeOffset) / (window.innerWidth * 0.5), 1),
+                            opacity: Math.min(Math.abs(swipeOffset) / (window.innerWidth * 0.3), 1),
                             pointerEvents: 'none',
                             zIndex: 0,
+                            overflow: 'hidden',
+                            transition: isTransitioning ? 'transform 0.2s ease-out, opacity 0.2s ease-out' : 'none',
                         }}
-                    />
+                    >
+                        <SpinnerImage
+                            src={previewPageUrl}
+                            alt="Preview page"
+                            priority={Priority.HIGH}
+                            shouldLoad
+                            imgStyle={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                objectPosition: 'center',
+                            }}
+                            spinnerStyle={{
+                                width: '100%',
+                                height: '100%',
+                                backgroundColor: 'transparent',
+                            }}
+                        />
+                    </Box>
                 )}
                 <Stack
                     ref={mergedRef}
