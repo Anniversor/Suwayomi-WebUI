@@ -211,6 +211,7 @@ const BaseReaderViewer = forwardRef(
             swipePreviewThreshold,
             currentPageIndex,
             pages,
+            containerRef: scrollElementRef,
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));
