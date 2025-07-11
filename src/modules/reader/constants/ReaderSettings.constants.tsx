@@ -161,6 +161,8 @@ const GLOBAL_READER_SETTING_OBJECT: Record<keyof IReaderSettingsGlobal, undefine
     scrollAmount: undefined,
     shouldUseInfiniteScroll: undefined,
     shouldShowTransitionPage: undefined,
+    shouldEnableSwipeNavigation: undefined,
+    shouldEnableSwipeNavigationEffect: undefined,
 };
 
 export const GLOBAL_READER_SETTING_KEYS = Object.keys(GLOBAL_READER_SETTING_OBJECT);
@@ -248,6 +250,8 @@ export const DEFAULT_READER_SETTINGS: IReaderSettings = {
     scrollAmount: ReaderScrollAmount.LARGE,
     shouldUseInfiniteScroll: true,
     shouldShowTransitionPage: true,
+    shouldEnableSwipeNavigation: true,
+    shouldEnableSwipeNavigationEffect: true,
     swipePreviewThreshold: SWIPE_PREVIEW_THRESHOLD.default,
 };
 

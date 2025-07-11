@@ -109,6 +109,8 @@ const BaseReaderViewer = forwardRef(
             shouldStretchPage,
             isStaticNav,
             swipePreviewThreshold,
+            shouldEnableSwipeNavigation,
+            shouldEnableSwipeNavigationEffect,
             readerNavBarWidth,
             setScrollbarXSize,
             setScrollbarYSize,
@@ -125,75 +127,47 @@ const BaseReaderViewer = forwardRef(
             isCurrentChapterReady,
         }: Pick<
             ReaderStatePages,
-            |
-            'currentPageIndex'
-            |
-            'pageToScrollToIndex'
-            |
-            'setPageToScrollToIndex'
-            |
-            'pages'
-            |
-            'totalPages'
-            |
-            'setPages'
-            |
-            'setPageLoadStates'
-            |
-            'setTotalPages'
-            |
-            'setCurrentPageIndex'
-            |
-            'transitionPageMode'
-            |
-            'retryFailedPagesKeyPrefix'
-            |
-            'setTransitionPageMode'
+            | 'currentPageIndex'
+            | 'pageToScrollToIndex'
+            | 'setPageToScrollToIndex'
+            | 'pages'
+            | 'totalPages'
+            | 'setPages'
+            | 'setPageLoadStates'
+            | 'setTotalPages'
+            | 'setCurrentPageIndex'
+            | 'transitionPageMode'
+            | 'retryFailedPagesKeyPrefix'
+            | 'setTransitionPageMode'
         > &
             Pick<
                 IReaderSettings,
-                |
-                'readingMode'
-                |
-                'readingDirection'
-                |
-                'shouldUseInfiniteScroll'
-                |
-                'readerWidth'
-                |
-                'pageScaleMode'
-                |
-                'shouldOffsetDoubleSpreads'
-                |
-                'imagePreLoadAmount'
-                |
-                'pageGap'
-                |
-                'customFilter'
-                |
-                'shouldStretchPage'
-                |
-                'isStaticNav'
-                |
-                'swipePreviewThreshold'
+                | 'readingMode'
+                | 'readingDirection'
+                | 'shouldUseInfiniteScroll'
+                | 'readerWidth'
+                | 'pageScaleMode'
+                | 'shouldOffsetDoubleSpreads'
+                | 'imagePreLoadAmount'
+                | 'pageGap'
+                | 'customFilter'
+                | 'shouldStretchPage'
+                | 'isStaticNav'
+                | 'swipePreviewThreshold'
+                | 'shouldEnableSwipeNavigation'
+                | 'shouldEnableSwipeNavigationEffect'
             > &
             Pick<TReaderScrollbarContext, 'setScrollbarXSize' | 'setScrollbarYSize'> &
             Pick<NavbarContextType, 'readerNavBarWidth'> &
             Pick<TReaderOverlayContext, 'isVisible' | 'setIsVisible'> &
             Pick<
                 ReaderStateChapters,
-                |
-                'initialChapter'
-                |
-                'currentChapter'
-                |
-                'chapters'
-                |
-                'visibleChapters'
-                |
-                'setReaderStateChapters'
-                |
-                'isCurrentChapterReady'
+                | 'initialChapter'
+                | 'currentChapter'
+                | 'chapters'
+                | 'visibleChapters'
+                | 'setReaderStateChapters'
+                | 'isCurrentChapterReady'
             > &
             TReaderTapZoneContext & {
                 updateCurrentPageIndex: ReturnType<typeof ReaderControls.useUpdateCurrentPageIndex>;
@@ -240,6 +214,9 @@ const BaseReaderViewer = forwardRef(
             swipePreviewThreshold,
             currentPageIndex,
             pages,
+            containerRef: scrollElementRef,
+            shouldEnableSwipeNavigation,
+            shouldEnableSwipeNavigationEffect,
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));
@@ -373,63 +350,67 @@ const BaseReaderViewer = forwardRef(
                     overflow: 'hidden',
                 }}
             >
-                {previewPageUrl && (isSwiping || isTransitioning) && swipeOffset !== 0 && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: (() => {
-                                // 根据预览方向和阅读方向决定预览页面的初始位置
-                                if (previewDirection === 'next') {
-                                    // 下一页：在LTR模式下从右侧进入，在RTL模式下从左侧进入
-                                    return readingDirection === ReadingDirection.LTR ? '100%' : '-100%';
-                                }
-                                // 上一页：在LTR模式下从左侧进入，在RTL模式下从右侧进入
-                                return readingDirection === ReadingDirection.LTR ? '-100%' : '100%';
-                            })(),
-                            transform: (() => {
-                                const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
-                                if (previewDirection === 'next') {
-                                    // 下一页的移动方向
-                                    if (readingDirection === ReadingDirection.LTR) {
-                                        return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
+                {/* 预览页面层 - 放在Stack外面 */}
+                {previewPageUrl &&
+                    (isSwiping || isTransitioning) &&
+                    swipeOffset !== 0 &&
+                    shouldEnableSwipeNavigationEffect && (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: (() => {
+                                    // 根据预览方向和阅读方向决定预览页面的初始位置
+                                    if (previewDirection === 'next') {
+                                        // 下一页：在LTR模式下从右侧进入，在RTL模式下从左侧进入
+                                        return readingDirection === ReadingDirection.LTR ? '100%' : '-100%';
                                     }
-                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
-                                }
-                                // 上一页的移动方向
-                                if (readingDirection === ReadingDirection.LTR) {
-                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
-                                }
-                                return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
-                            })(),
-                            width: '100%',
-                            height: '100%',
-                            opacity: Math.min(Math.abs(swipeOffset) / (window.innerWidth * 0.3), 1),
-                            pointerEvents: 'none',
-                            zIndex: 0,
-                            overflow: 'hidden',
-                            transition: isTransitioning ? 'transform 0.2s ease-out, opacity 0.2s ease-out' : 'none',
-                        }}
-                    >
-                        <SpinnerImage
-                            src={previewPageUrl}
-                            alt="Preview page"
-                            priority={Priority.HIGH}
-                            shouldLoad
-                            imgStyle={{
+                                    // 上一页：在LTR模式下从左侧进入，在RTL模式下从右侧进入
+                                    return readingDirection === ReadingDirection.LTR ? '-100%' : '100%';
+                                })(),
+                                transform: (() => {
+                                    const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
+                                    if (previewDirection === 'next') {
+                                        // 下一页的移动方向
+                                        if (readingDirection === ReadingDirection.LTR) {
+                                            return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
+                                        }
+                                        return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
+                                    }
+                                    // 上一页的移动方向
+                                    if (readingDirection === ReadingDirection.LTR) {
+                                        return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
+                                    }
+                                    return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
+                                })(),
                                 width: '100%',
                                 height: '100%',
-                                objectFit: 'contain',
-                                objectPosition: 'center',
+                                opacity: Math.min(Math.abs(swipeOffset) / (window.innerWidth * 0.3), 1),
+                                pointerEvents: 'none',
+                                zIndex: 0,
+                                overflow: 'hidden',
+                                transition: isTransitioning ? 'transform 0.2s ease-out, opacity 0.2s ease-out' : 'none',
                             }}
-                            spinnerStyle={{
-                                width: '100%',
-                                height: '100%',
-                                backgroundColor: 'transparent',
-                            }}
-                        />
-                    </Box>
-                )}
+                        >
+                            <SpinnerImage
+                                src={previewPageUrl}
+                                alt="Preview page"
+                                priority={Priority.HIGH}
+                                shouldLoad
+                                imgStyle={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain',
+                                    objectPosition: 'center',
+                                }}
+                                spinnerStyle={{
+                                    width: '100%',
+                                    height: '100%',
+                                    backgroundColor: 'transparent',
+                                }}
+                            />
+                        </Box>
+                    )}
                 <Stack
                     ref={mergedRef}
                     sx={{
@@ -438,7 +419,11 @@ const BaseReaderViewer = forwardRef(
                         overflow: 'auto',
                         overscrollBehavior: 'contain',
                         flexWrap: 'nowrap',
-                        transform: readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${swipeOffset}px)` : 'none',
+                        // 滑动特效：页面跟随手指移动（仅在特效启用时）
+                        transform:
+                            readingMode === ReadingMode.SINGLE_PAGE && shouldEnableSwipeNavigationEffect
+                                ? `translateX(${swipeOffset}px)`
+                                : 'none',
                         transition: isTransitioning ? 'transform 0.2s ease-out' : 'none',
                         ...applyStyles(
                             isContinuousVerticalReadingModeActive && shouldApplyReaderWidth(readerWidth, pageScaleMode),
@@ -624,5 +609,7 @@ export const ReaderViewer = withPropsFrom(
         'setReaderStateChapters',
         'isCurrentChapterReady',
         'swipePreviewThreshold',
+        'shouldEnableSwipeNavigation',
+        'shouldEnableSwipeNavigationEffect',
     ],
 );

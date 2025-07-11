@@ -1,4 +1,4 @@
-'''/*
+/*
  * Copyright (C) Contributors to the Suwayomi project
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -381,6 +381,12 @@ export const APP_METADATA: Record<
         toConstrainedValue: (value: number) =>
             coerceIn(value, SWIPE_PREVIEW_THRESHOLD.min, SWIPE_PREVIEW_THRESHOLD.max),
     },
+    shouldEnableSwipeNavigation: {
+        convert: convertToBoolean,
+    },
+    shouldEnableSwipeNavigationEffect: {
+        convert: convertToBoolean,
+    },
 } as const;
 
 export const VALID_APP_METADATA_KEYS = Object.keys(APP_METADATA);
@@ -660,4 +666,3 @@ export const METADATA_MIGRATIONS: IMetadataMigration[] = [
         ],
     },
 ];
-''

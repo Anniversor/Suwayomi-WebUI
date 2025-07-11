@@ -820,6 +820,14 @@
                 "swipe_preview_threshold": "滑动预览阈值",
                 "unchangeable_in_reader": "在阅读器打开时无法更改设置"
             },
+            "swipe_navigation": {
+                "title": "启用滑动翻页",
+                "description": "允许通过滑动手势进行翻页操作"
+            },
+            "swipe_navigation_effect": {
+                "title": "启用滑动翻页特效",
+                "description": "在滑动翻页时显示视觉特效"
+            },
             "reader_type": {
                 "label": {
                     "continuous_vertical": "连续竖直滚动",

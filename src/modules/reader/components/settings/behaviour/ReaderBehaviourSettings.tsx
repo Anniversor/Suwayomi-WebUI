@@ -136,6 +136,31 @@ export const ReaderBehaviourSettings = ({
                 checked={settings.shouldInformAboutScanlatorChange}
                 onChange={(_, checked) => updateSetting('shouldInformAboutScanlatorChange', checked)}
             />
+            <CheckboxInput
+                label={
+                    <Box>
+                        <Typography>{t('reader.settings.swipe_navigation.title')}</Typography>
+                        <Typography variant="body2" color="textDisabled">
+                            {t('reader.settings.swipe_navigation.description')}
+                        </Typography>
+                    </Box>
+                }
+                checked={settings.shouldEnableSwipeNavigation}
+                onChange={(_, checked) => updateSetting('shouldEnableSwipeNavigation', checked)}
+            />
+            <CheckboxInput
+                label={
+                    <Box>
+                        <Typography>{t('reader.settings.swipe_navigation_effect.title')}</Typography>
+                        <Typography variant="body2" color="textDisabled">
+                            {t('reader.settings.swipe_navigation_effect.description')}
+                        </Typography>
+                    </Box>
+                }
+                checked={settings.shouldEnableSwipeNavigationEffect}
+                onChange={(_, checked) => updateSetting('shouldEnableSwipeNavigationEffect', checked)}
+                disabled={!settings.shouldEnableSwipeNavigation}
+            />
             <ReaderSettingAutoScroll
                 autoScroll={settings.autoScroll}
                 setAutoScroll={(...args) => updateSetting('autoScroll', ...args)}

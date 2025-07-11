@@ -1041,6 +1041,14 @@
       "scroll_amount": "Scroll amount",
       "show_transition_page": "Show transition page",
       "source_series": "Series settings",
+      "swipe_navigation": {
+        "description": "Enable swipe gestures to navigate between pages in single page mode",
+        "title": "Swipe navigation"
+      },
+      "swipe_navigation_effect": {
+        "description": "Show visual feedback when swiping pages",
+        "title": "Swipe navigation effect"
+      },
       "tap_zones": {
         "edge": "Edge",
         "invert": "Invert tap zones",
