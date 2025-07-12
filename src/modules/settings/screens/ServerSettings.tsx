@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { useTranslation, Trans } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import Link from '@mui/material/Link';
 import List from '@mui/material/List';
@@ -29,35 +29,11 @@ import {
 } from '@/modules/settings/services/ServerSettingsMetadata.ts';
 import { makeToast } from '@/modules/core/utils/Toast.ts';
 import { MetadataUpdateSettings } from '@/modules/app-updates/AppUpdateChecker.types.ts';
-import { ServerSettings as GqlServerSettings } from '@/modules/settings/Settings.types.ts';
+import { ServerSettings as GqlServerSettings, ServerSettingsType } from '@/modules/settings/Settings.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { useAppTitle } from '@/modules/navigation-bar/hooks/useAppTitle.ts';
-
-type ServerSettingsType = Pick<
-    GqlServerSettings,
-    | 'ip'
-    | 'port'
-    | 'socksProxyEnabled'
-    | 'socksProxyVersion'
-    | 'socksProxyHost'
-    | 'socksProxyPort'
-    | 'socksProxyUsername'
-    | 'socksProxyPassword'
-    | 'debugLogsEnabled'
-    | 'systemTrayEnabled'
-    | 'maxLogFiles'
-    | 'maxLogFileSize'
-    | 'maxLogFolderSize'
-    | 'basicAuthEnabled'
-    | 'basicAuthUsername'
-    | 'basicAuthPassword'
-    | 'flareSolverrEnabled'
-    | 'flareSolverrTimeout'
-    | 'flareSolverrUrl'
-    | 'flareSolverrSessionName'
-    | 'flareSolverrSessionTtl'
-    | 'flareSolverrAsResponseFallback'
->;
+import { AuthMode, SortOrder } from '@/lib/graphql/generated/graphql';
+import { AUTH_MODES_SELECT_VALUES } from '@/modules/settings/Settings.constants.ts';
 
 const extractServerSettings = (settings: GqlServerSettings): ServerSettingsType => ({
     ip: settings.ip,
@@ -73,15 +49,22 @@ const extractServerSettings = (settings: GqlServerSettings): ServerSettingsType 
     maxLogFiles: settings.maxLogFiles,
     maxLogFileSize: settings.maxLogFileSize,
     maxLogFolderSize: settings.maxLogFolderSize,
-    basicAuthEnabled: settings.basicAuthEnabled,
-    basicAuthUsername: settings.basicAuthUsername,
-    basicAuthPassword: settings.basicAuthPassword,
+    authMode: settings.authMode,
+    authUsername: settings.authUsername,
+    authPassword: settings.authPassword,
     flareSolverrEnabled: settings.flareSolverrEnabled,
     flareSolverrTimeout: settings.flareSolverrTimeout,
     flareSolverrUrl: settings.flareSolverrUrl,
     flareSolverrSessionName: settings.flareSolverrSessionName,
     flareSolverrSessionTtl: settings.flareSolverrSessionTtl,
     flareSolverrAsResponseFallback: settings.flareSolverrAsResponseFallback,
+    opdsUseBinaryFileSizes: settings.opdsUseBinaryFileSizes,
+    opdsItemsPerPage: settings.opdsItemsPerPage,
+    opdsEnablePageReadProgress: settings.opdsEnablePageReadProgress,
+    opdsMarkAsReadOnDownload: settings.opdsMarkAsReadOnDownload,
+    opdsShowOnlyUnreadChapters: settings.opdsShowOnlyUnreadChapters,
+    opdsShowOnlyDownloadedChapters: settings.opdsShowOnlyDownloadedChapters,
+    opdsChapterSortOrder: settings.opdsChapterSortOrder,
 });
 
 const getLogFilesCleanupDisplayValue = (ttl: number): string => {
@@ -201,6 +184,7 @@ export const ServerSettings = () => {
     }
 
     const serverSettings = extractServerSettings(data!.settings);
+    const authModeDisabled = !serverSettings.authUsername.trim() || !serverSettings.authPassword.trim();
 
     return (
         <List sx={{ pt: 0 }}>
@@ -280,27 +264,25 @@ export const ServerSettings = () => {
                     </ListSubheader>
                 }
             >
-                <ListItem>
-                    <ListItemText primary={t('settings.server.auth.basic.label.enable')} />
-                    <Switch
-                        edge="end"
-                        checked={serverSettings.basicAuthEnabled}
-                        disabled={!serverSettings.basicAuthUsername.trim() && !serverSettings.basicAuthPassword.trim()}
-                        onChange={(e) => updateSetting('basicAuthEnabled', e.target.checked)}
-                    />
-                </ListItem>
-                <TextSetting
-                    settingName={t('settings.server.auth.basic.label.username')}
-                    value={serverSettings.basicAuthUsername}
-                    validate={(value) => !serverSettings.basicAuthEnabled || !!value.trim()}
-                    handleChange={(authUsername) => updateSetting('basicAuthUsername', authUsername)}
+                <SelectSetting<AuthMode>
+                    settingName={t('settings.server.auth.label.title')}
+                    value={serverSettings.authMode}
+                    values={AUTH_MODES_SELECT_VALUES}
+                    handleChange={(mode) => updateSetting('authMode', mode)}
+                    disabled={authModeDisabled}
                 />
                 <TextSetting
-                    settingName={t('settings.server.auth.basic.label.password')}
-                    value={serverSettings.basicAuthPassword}
+                    settingName={t('settings.server.auth.label.username')}
+                    value={serverSettings.authUsername}
+                    validate={(value) => serverSettings.authMode === AuthMode.None || !!value.trim()}
+                    handleChange={(authUsername) => updateSetting('authUsername', authUsername)}
+                />
+                <TextSetting
+                    settingName={t('settings.server.auth.label.password')}
+                    value={serverSettings.authPassword}
                     isPassword
-                    validate={(value) => !serverSettings.basicAuthEnabled || !!value.trim()}
-                    handleChange={(authPassword) => updateSetting('basicAuthPassword', authPassword)}
+                    validate={(value) => serverSettings.authMode === AuthMode.None || !!value.trim()}
+                    handleChange={(authPassword) => updateSetting('authPassword', authPassword)}
                 />
             </List>
             <List
@@ -381,6 +363,92 @@ export const ServerSettings = () => {
                         onChange={(e) => updateSetting('flareSolverrAsResponseFallback', e.target.checked)}
                     />
                 </ListItem>
+            </List>
+            <List
+                subheader={
+                    <ListSubheader component="div" id="server-settings-opds">
+                        {t('settings.server.opds.title')}
+                    </ListSubheader>
+                }
+            >
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.opds.binary_file_sizes.label.title')}
+                        secondary={t('settings.server.opds.binary_file_sizes.label.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.opdsUseBinaryFileSizes}
+                        onChange={(e) => updateSetting('opdsUseBinaryFileSizes', e.target.checked)}
+                    />
+                </ListItem>
+                <NumberSetting
+                    settingTitle={t('settings.server.opds.items_per_page.label.title')}
+                    settingValue={serverSettings.opdsItemsPerPage.toString()}
+                    dialogDescription={t('settings.server.opds.items_per_page.label.description')}
+                    value={serverSettings.opdsItemsPerPage}
+                    defaultValue={50}
+                    minValue={10}
+                    maxValue={5000}
+                    stepSize={10}
+                    showSlider
+                    valueUnit={t('settings.server.opds.items_per_page.label.unit_other')}
+                    handleUpdate={(value) => updateSetting('opdsItemsPerPage', value)}
+                />
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.opds.enable_page_read_progress.label.title')}
+                        secondary={t('settings.server.opds.enable_page_read_progress.label.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.opdsEnablePageReadProgress}
+                        onChange={(e) => updateSetting('opdsEnablePageReadProgress', e.target.checked)}
+                    />
+                </ListItem>
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.opds.mark_as_read_on_download.label.title')}
+                        secondary={t('settings.server.opds.mark_as_read_on_download.label.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.opdsMarkAsReadOnDownload}
+                        onChange={(e) => updateSetting('opdsMarkAsReadOnDownload', e.target.checked)}
+                    />
+                </ListItem>
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.opds.show_only_unread_chapters.label.title')}
+                        secondary={t('settings.server.opds.show_only_unread_chapters.label.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.opdsShowOnlyUnreadChapters}
+                        onChange={(e) => updateSetting('opdsShowOnlyUnreadChapters', e.target.checked)}
+                    />
+                </ListItem>
+                <ListItem>
+                    <ListItemText
+                        primary={t('settings.server.opds.show_only_downloaded_chapters.label.title')}
+                        secondary={t('settings.server.opds.show_only_downloaded_chapters.label.description')}
+                    />
+                    <Switch
+                        edge="end"
+                        checked={serverSettings.opdsShowOnlyDownloadedChapters}
+                        onChange={(e) => updateSetting('opdsShowOnlyDownloadedChapters', e.target.checked)}
+                    />
+                </ListItem>
+                <SelectSetting<SortOrder>
+                    settingName={t('settings.server.opds.chapter_sort_order.label.title')}
+                    dialogDescription={t('settings.server.opds.chapter_sort_order.label.description')}
+                    value={serverSettings.opdsChapterSortOrder}
+                    values={[
+                        [SortOrder.Asc, { text: t('global.sort.label.asc') }],
+                        [SortOrder.Desc, { text: t('global.sort.label.desc') }],
+                    ]}
+                    handleChange={(value) => updateSetting('opdsChapterSortOrder', value)}
+                />
             </List>
             <List
                 subheader={

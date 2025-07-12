@@ -52,9 +52,9 @@ export const SERVER_SETTINGS = gql`
         updateMangas
 
         # Authentication
-        basicAuthEnabled
-        basicAuthUsername
-        basicAuthPassword
+        authMode
+        authPassword
+        authUsername
 
         # misc
         debugLogsEnabled
@@ -79,5 +79,14 @@ export const SERVER_SETTINGS = gql`
         flareSolverrSessionName
         flareSolverrSessionTtl
         flareSolverrAsResponseFallback
+
+        # OPDS
+        opdsUseBinaryFileSizes
+        opdsItemsPerPage
+        opdsEnablePageReadProgress
+        opdsMarkAsReadOnDownload
+        opdsShowOnlyUnreadChapters
+        opdsShowOnlyDownloadedChapters
+        opdsChapterSortOrder
     }
 `;

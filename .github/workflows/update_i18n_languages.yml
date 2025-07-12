@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   update-i18n:
-    if: "startsWith(github.event.head_commit.message, 'Translations update from Hosted Weblate')"
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      endsWith(github.event.head_commit.message, 'Translations update from Hosted Weblate')
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +34,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install dependencies
-        run: yarn ci
+        run: |
+          cd master
+          yarn ci
 
       - name: Update i18n resources
-        run: yarn i18n:gen-resources
+        run: |
+          cd master
+          echo '{"weblateToken": "${{ secrets.WEBLATE_TOKEN }}"}' > tools/scripts/tokens.json
+          yarn i18n:gen-resources
