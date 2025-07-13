@@ -225,6 +225,49 @@ const BaseReaderViewer = forwardRef(
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));
+
+        // 优化预览页面样式计算，避免每次渲染时重复计算
+        const previewPageStyles = useMemo(() => {
+            if (!previewDirection || swipeOffset === 0) return null;
+
+            const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
+            const isLTR = readingDirection === ReadingDirection.LTR;
+            const isNext = previewDirection === 'next';
+            const isSwipeLeft = swipeOffset < 0;
+
+            // 计算初始位置
+            let left: string;
+            if (isNext) {
+                left = isLTR ? '100%' : '-100%';
+            } else {
+                left = isLTR ? '-100%' : '100%';
+            }
+
+            // 计算变换
+            let shouldMove: boolean;
+            if (isNext) {
+                shouldMove = isLTR ? isSwipeLeft : !isSwipeLeft;
+            } else {
+                shouldMove = isLTR ? !isSwipeLeft : isSwipeLeft;
+            }
+
+            const transform = shouldMove ? `translateX(${isSwipeLeft ? '-' : ''}${progress}%)` : 'translateX(0)';
+
+            return { left, transform };
+        }, [previewDirection, swipeOffset, readingDirection]);
+
+        // 优化主页面transform计算
+        const mainPageTransform = useMemo(
+            () => (readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${swipeOffset}px)` : 'none'),
+            [readingMode, swipeOffset],
+        );
+
+        // 优化transition样式计算
+        const transitionStyle = useMemo(
+            () =>
+                isTransitioning ? `transform ${swipeAnimationSpeed / 1000}s cubic-bezier(0.25, 0.8, 0.25, 1)` : 'none',
+            [isTransitioning, swipeAnimationSpeed],
+        );
         const [{ minChapterViewWidth, minChapterViewHeight, minChapterSizeSourceChapterId }, setChapterViewerSize] =
             useState({
                 minChapterViewWidth: 0,
@@ -356,44 +399,20 @@ const BaseReaderViewer = forwardRef(
                 }}
             >
                 {/* 预览页面层 - 放在Stack外面 */}
-                {previewPageUrl && (isSwiping || isTransitioning) && swipeOffset !== 0 && (
+                {previewPageUrl && (isSwiping || isTransitioning) && swipeOffset !== 0 && previewPageStyles && (
                     <Box
                         sx={{
                             position: 'absolute',
                             top: 0,
-                            left: (() => {
-                                // 根据预览方向和阅读方向决定预览页面的初始位置
-                                if (previewDirection === 'next') {
-                                    // 下一页：在LTR模式下从右侧进入，在RTL模式下从左侧进入
-                                    return readingDirection === ReadingDirection.LTR ? '100%' : '-100%';
-                                }
-                                // 上一页：在LTR模式下从左侧进入，在RTL模式下从右侧进入
-                                return readingDirection === ReadingDirection.LTR ? '-100%' : '100%';
-                            })(),
-                            transform: (() => {
-                                const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
-                                if (previewDirection === 'next') {
-                                    // 下一页的移动方向
-                                    if (readingDirection === ReadingDirection.LTR) {
-                                        return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
-                                    }
-                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
-                                }
-                                // 上一页的移动方向
-                                if (readingDirection === ReadingDirection.LTR) {
-                                    return swipeOffset > 0 ? `translateX(${progress}%)` : 'translateX(0)';
-                                }
-                                return swipeOffset < 0 ? `translateX(-${progress}%)` : 'translateX(0)';
-                            })(),
+                            left: previewPageStyles.left,
+                            transform: previewPageStyles.transform,
                             width: '100%',
                             height: '100%',
                             opacity: 1,
                             pointerEvents: 'none',
                             zIndex: 0,
                             overflow: 'hidden',
-                            transition: isTransitioning
-                                ? `transform ${swipeAnimationSpeed / 1000}s cubic-bezier(0.25, 0.8, 0.25, 1)`
-                                : 'none',
+                            transition: transitionStyle,
                         }}
                     >
                         <SpinnerImage
@@ -424,10 +443,8 @@ const BaseReaderViewer = forwardRef(
                         overscrollBehavior: 'contain',
                         flexWrap: 'nowrap',
                         // 滑动特效：页面跟随手指移动
-                        transform: readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${swipeOffset}px)` : 'none',
-                        transition: isTransitioning
-                            ? `transform ${swipeAnimationSpeed / 1000}s cubic-bezier(0.25, 0.8, 0.25, 1)`
-                            : 'none',
+                        transform: mainPageTransform,
+                        transition: transitionStyle,
                         ...applyStyles(
                             isContinuousVerticalReadingModeActive && shouldApplyReaderWidth(readerWidth, pageScaleMode),
                             { alignItems: 'center' },
