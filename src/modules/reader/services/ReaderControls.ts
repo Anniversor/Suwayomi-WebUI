@@ -363,7 +363,7 @@ export class ReaderControls {
             () => getNextPageIndex('next', currentPage.pagesIndex, pages),
             [currentPage, pages],
         );
-        const indexOfFirstPage = pages[0].primary.index; // 始终使用第一页的primary索引
+        const indexOfFirstPage = getNextIndexFromPage(pages[0]);
         const indexOfLastPage = getNextIndexFromPage(pages[pages.length - 1]);
         const direction = READING_DIRECTION_TO_THEME_DIRECTION[readingDirection.value];
 

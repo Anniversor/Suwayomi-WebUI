@@ -387,6 +387,9 @@ export const APP_METADATA: Record<
     isSwipeAnimationEnabled: {
         convert: convertToBoolean,
     },
+    swipeAnimationSpeed: {
+        convert: convertToNumber,
+    },
 } as const;
 
 export const VALID_APP_METADATA_KEYS = Object.keys(APP_METADATA);

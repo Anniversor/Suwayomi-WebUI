@@ -112,6 +112,7 @@ const BaseReaderViewer = forwardRef(
             swipePreviewThreshold,
             isSinglePageSwipeEnabled,
             isSwipeAnimationEnabled,
+            swipeAnimationSpeed,
             readerNavBarWidth,
             setScrollbarXSize,
             setScrollbarYSize,
@@ -157,6 +158,7 @@ const BaseReaderViewer = forwardRef(
                 | 'swipePreviewThreshold'
                 | 'isSinglePageSwipeEnabled'
                 | 'isSwipeAnimationEnabled'
+                | 'swipeAnimationSpeed'
             > &
             Pick<TReaderScrollbarContext, 'setScrollbarXSize' | 'setScrollbarYSize'> &
             Pick<NavbarContextType, 'readerNavBarWidth'> &
@@ -219,6 +221,7 @@ const BaseReaderViewer = forwardRef(
             transitionPageMode,
             isSinglePageSwipeEnabled,
             isSwipeAnimationEnabled,
+            swipeAnimationSpeed,
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));
@@ -384,11 +387,13 @@ const BaseReaderViewer = forwardRef(
                             })(),
                             width: '100%',
                             height: '100%',
-                            opacity: Math.min(Math.abs(swipeOffset) / (window.innerWidth * 0.3), 1),
+                            opacity: 1,
                             pointerEvents: 'none',
                             zIndex: 0,
                             overflow: 'hidden',
-                            transition: isTransitioning ? 'transform 0.2s ease-out, opacity 0.2s ease-out' : 'none',
+                            transition: isTransitioning
+                                ? `transform ${swipeAnimationSpeed / 1000}s cubic-bezier(0.25, 0.8, 0.25, 1)`
+                                : 'none',
                         }}
                     >
                         <SpinnerImage
@@ -420,7 +425,9 @@ const BaseReaderViewer = forwardRef(
                         flexWrap: 'nowrap',
                         // 滑动特效：页面跟随手指移动
                         transform: readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${swipeOffset}px)` : 'none',
-                        transition: isTransitioning ? 'transform 0.2s ease-out' : 'none',
+                        transition: isTransitioning
+                            ? `transform ${swipeAnimationSpeed / 1000}s cubic-bezier(0.25, 0.8, 0.25, 1)`
+                            : 'none',
                         ...applyStyles(
                             isContinuousVerticalReadingModeActive && shouldApplyReaderWidth(readerWidth, pageScaleMode),
                             { alignItems: 'center' },
@@ -607,5 +614,6 @@ export const ReaderViewer = withPropsFrom(
         'swipePreviewThreshold',
         'isSinglePageSwipeEnabled',
         'isSwipeAnimationEnabled',
+        'swipeAnimationSpeed',
     ],
 );
