@@ -212,6 +212,7 @@ const BaseReaderViewer = forwardRef(
             currentPageIndex,
             pages,
             containerRef: scrollElementRef,
+            transitionPageMode,
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));

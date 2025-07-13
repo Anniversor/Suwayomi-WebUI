@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ReadingDirection, ReadingMode } from '@/modules/reader/types/Reader.types.ts';
+import { ReadingDirection, ReadingMode, ReaderTransitionPageMode } from '@/modules/reader/types/Reader.types.ts';
 import { ReaderControls } from '@/modules/reader/services/ReaderControls.ts';
 import { getNextPageIndex, getPage } from '@/modules/reader/utils/ReaderProgressBar.utils.tsx';
 import { ReaderStatePages } from '@/modules/reader/types/ReaderProgressBar.types.ts';
@@ -18,6 +18,7 @@ interface UseSwipeNavigateProps {
     swipePreviewThreshold: number;
     currentPageIndex: number;
     pages: ReaderStatePages['pages'];
+    transitionPageMode: ReaderTransitionPageMode;
     containerRef?: React.RefObject<HTMLElement | null>;
 }
 
@@ -31,6 +32,7 @@ export function useSwipeNavigate({
     swipePreviewThreshold,
     currentPageIndex,
     pages,
+    transitionPageMode,
     containerRef,
 }: UseSwipeNavigateProps) {
     const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
@@ -172,12 +174,25 @@ export function useSwipeNavigate({
     const currentPage = useMemo(() => getPage(currentPageIndex, pages), [currentPageIndex, pages]);
     const previewPageIndex = useMemo(() => {
         if (!previewDirection) return null;
+
+        // 如果当前处于过渡页面状态，不显示预览
+        if (transitionPageMode !== ReaderTransitionPageMode.NONE) {
+            return null;
+        }
+
         try {
+            // 检查是否在章节边界
+            if (previewDirection === 'previous' && currentPage.pagesIndex === 0) {
+                return null; // 在第一页时，不显示上一页预览
+            }
+            if (previewDirection === 'next' && currentPage.pagesIndex === pages.length - 1) {
+                return null; // 在最后一页时，不显示下一页预览
+            }
             return getNextPageIndex(previewDirection, currentPage.pagesIndex, pages);
         } catch {
             return null;
         }
-    }, [previewDirection, currentPage.pagesIndex, pages]);
+    }, [previewDirection, currentPage.pagesIndex, pages, transitionPageMode]);
 
     const previewPageUrl = useMemo(() => {
         if (previewPageIndex === null) return null;
