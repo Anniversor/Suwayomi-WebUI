@@ -200,6 +200,7 @@ export interface IReaderSettingsManga {
     swipePreviewThreshold: number;
     isSinglePageSwipeEnabled: boolean;
     isSwipeAnimationEnabled: boolean;
+    swipeAnimationSpeed: number;
 }
 
 export interface IReaderSettings extends IReaderSettingsGlobal, IReaderSettingsManga {}

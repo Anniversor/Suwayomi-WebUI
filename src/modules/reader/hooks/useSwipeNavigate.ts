@@ -22,10 +22,9 @@ interface UseSwipeNavigateProps {
     containerRef?: React.RefObject<HTMLElement | null>;
     isSinglePageSwipeEnabled: boolean;
     isSwipeAnimationEnabled: boolean;
+    swipeAnimationSpeed: number;
 }
 
-const SWIPE_THRESHOLD = 30;
-const ANIMATION_DURATION = 200;
 const EDGE_SWIPE_THRESHOLD = 30; // iOS边缘返回手势的检测区域
 
 export function useSwipeNavigate({
@@ -38,6 +37,7 @@ export function useSwipeNavigate({
     containerRef,
     isSinglePageSwipeEnabled,
     isSwipeAnimationEnabled,
+    swipeAnimationSpeed,
 }: UseSwipeNavigateProps) {
     const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
     const [isSwiping, setIsSwiping] = useState(false);
@@ -120,8 +120,8 @@ export function useSwipeNavigate({
                 // 始终跟随手指移动，让滑动更跟手
                 setSwipeOffset(deltaX);
 
-                // 只有当水平滑动距离大于垂直滑动距离且超过阈值时才显示预览页面
-                if (absDeltaX > deltaY && absDeltaX > SWIPE_THRESHOLD) {
+                // 只有当水平滑动距离大于垂直滑动距离时才显示预览页面
+                if (absDeltaX > deltaY) {
                     setIsSwiping(true);
                     const isLeftSwipe = deltaX < 0;
                     if (readingDirection === ReadingDirection.LTR) {
@@ -171,7 +171,7 @@ export function useSwipeNavigate({
                         setPreviewDirection(null);
                         setIsSwiping(false);
                         setIsTransitioning(false);
-                    }, ANIMATION_DURATION);
+                    }, swipeAnimationSpeed);
                     return;
                 }
                 setSwipeOffset(0);
@@ -195,6 +195,7 @@ export function useSwipeNavigate({
             swipePreviewThreshold,
             isSinglePageSwipeEnabled,
             isSwipeAnimationEnabled,
+            swipeAnimationSpeed,
         ],
     );
 

@@ -1005,6 +1005,7 @@
         "swipe_preview_threshold": "Swipe preview threshold",
         "is_single_page_swipe_enabled": "Enable swipe navigation in single page mode",
         "is_swipe_animation_enabled": "Enable swipe animation",
+        "swipe_animation_speed": "Swipe animation speed",
         "unchangeable_in_reader": "Setting can not be changed while the reader is opened"
       },
       "overlay_mode": "Overlay mode",

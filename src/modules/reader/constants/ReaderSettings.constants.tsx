@@ -79,6 +79,13 @@ export const SWIPE_PREVIEW_THRESHOLD = {
     step: 1,
 };
 
+export const SWIPE_ANIMATION_SPEED = {
+    min: 50,
+    max: 1000,
+    default: 150,
+    step: 50,
+};
+
 export const CUSTOM_FILTER = {
     brightness: {
         min: 5,
@@ -251,6 +258,7 @@ export const DEFAULT_READER_SETTINGS: IReaderSettings = {
     swipePreviewThreshold: SWIPE_PREVIEW_THRESHOLD.default,
     isSinglePageSwipeEnabled: true,
     isSwipeAnimationEnabled: true,
+    swipeAnimationSpeed: SWIPE_ANIMATION_SPEED.default,
 };
 
 export const READER_PROGRESS_BAR_POSITION_TO_PLACEMENT: Record<ProgressBarPosition, TooltipProps['placement']> = {

@@ -19,6 +19,7 @@ import { SliderInput } from '@/modules/core/components/inputs/SliderInput.tsx';
 import {
     DEFAULT_READER_SETTINGS,
     IMAGE_PRE_LOAD_AMOUNT,
+    SWIPE_ANIMATION_SPEED,
 } from '@/modules/reader/constants/ReaderSettings.constants.tsx';
 import { ReaderSettingAutoScroll } from '@/modules/reader/components/settings/behaviour/ReaderSettingAutoScroll.tsx';
 import { ReaderSettingScrollAmount } from '@/modules/reader/components/settings/behaviour/ReaderSettingScrollAmount.tsx';
@@ -146,6 +147,27 @@ export const ReaderBehaviourSettings = ({
                 checked={settings.isSwipeAnimationEnabled.value}
                 onChange={(_, checked) => updateSetting('isSwipeAnimationEnabled', checked)}
                 disabled={!settings.isSinglePageSwipeEnabled.value}
+            />
+            <SliderInput
+                label={t('reader.settings.label.swipe_animation_speed')}
+                value={settings.swipeAnimationSpeed.value}
+                onDefault={() => onDefault?.('swipeAnimationSpeed')}
+                slotProps={{
+                    slider: {
+                        defaultValue: DEFAULT_READER_SETTINGS.swipeAnimationSpeed,
+                        value: settings.swipeAnimationSpeed.value,
+                        step: SWIPE_ANIMATION_SPEED.step,
+                        min: SWIPE_ANIMATION_SPEED.min,
+                        max: SWIPE_ANIMATION_SPEED.max,
+                        onChange: (_, value) => {
+                            updateSetting('swipeAnimationSpeed', value as number, false);
+                        },
+                        onChangeCommitted: (_, value) => {
+                            updateSetting('swipeAnimationSpeed', value as number, true);
+                        },
+                        disabled: !settings.isSinglePageSwipeEnabled.value || !settings.isSwipeAnimationEnabled.value,
+                    },
+                }}
             />
             <ReaderSettingAutoScroll
                 autoScroll={settings.autoScroll}
