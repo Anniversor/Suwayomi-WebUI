@@ -1003,6 +1003,8 @@
         "skip_filtered_chapters": "Skip filtered chapters",
         "static_navigation": "Static navigation",
         "swipe_preview_threshold": "Swipe preview threshold",
+        "is_single_page_swipe_enabled": "Enable swipe navigation in single page mode",
+        "is_swipe_animation_enabled": "Enable swipe animation",
         "unchangeable_in_reader": "Setting can not be changed while the reader is opened"
       },
       "overlay_mode": "Overlay mode",

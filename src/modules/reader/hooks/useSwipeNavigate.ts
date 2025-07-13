@@ -20,6 +20,8 @@ interface UseSwipeNavigateProps {
     pages: ReaderStatePages['pages'];
     transitionPageMode: ReaderTransitionPageMode;
     containerRef?: React.RefObject<HTMLElement | null>;
+    isSinglePageSwipeEnabled: boolean;
+    isSwipeAnimationEnabled: boolean;
 }
 
 const SWIPE_THRESHOLD = 30;
@@ -34,6 +36,8 @@ export function useSwipeNavigate({
     pages,
     transitionPageMode,
     containerRef,
+    isSinglePageSwipeEnabled,
+    isSwipeAnimationEnabled,
 }: UseSwipeNavigateProps) {
     const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
     const [isSwiping, setIsSwiping] = useState(false);
@@ -60,7 +64,7 @@ export function useSwipeNavigate({
             return undefined;
         };
 
-        if (readingMode === ReadingMode.SINGLE_PAGE) {
+        if (readingMode === ReadingMode.SINGLE_PAGE && isSinglePageSwipeEnabled) {
             // 如果提供了containerRef，只在该容器上添加事件监听器
             // 否则回退到document级别（保持向后兼容）
             const targetElement = containerRef?.current || document;
@@ -71,11 +75,11 @@ export function useSwipeNavigate({
             };
         }
         return undefined;
-    }, [readingMode, containerRef]);
+    }, [readingMode, containerRef, isSinglePageSwipeEnabled]);
 
     const handleTouchStart = useCallback(
         (e: React.TouchEvent) => {
-            if (e.touches.length === 1 && readingMode === ReadingMode.SINGLE_PAGE) {
+            if (e.touches.length === 1 && readingMode === ReadingMode.SINGLE_PAGE && isSinglePageSwipeEnabled) {
                 const touch = e.touches[0];
 
                 // 检测是否在屏幕左边缘，如果是则不处理，保留iOS的返回手势
@@ -93,44 +97,51 @@ export function useSwipeNavigate({
                 setPreviewDirection(null);
             }
         },
-        [readingMode],
+        [readingMode, isSinglePageSwipeEnabled],
     );
 
     const handleTouchMove = useCallback(
         (e: React.TouchEvent) => {
-            if (!touchStart || e.touches.length !== 1 || readingMode !== ReadingMode.SINGLE_PAGE) {
+            if (
+                !touchStart ||
+                e.touches.length !== 1 ||
+                readingMode !== ReadingMode.SINGLE_PAGE ||
+                !isSinglePageSwipeEnabled
+            ) {
                 return;
             }
 
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - touchStart.x;
-            const deltaY = Math.abs(touch.clientY - touchStart.y);
-            const absDeltaX = Math.abs(deltaX);
+            if (isSwipeAnimationEnabled) {
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - touchStart.x;
+                const deltaY = Math.abs(touch.clientY - touchStart.y);
+                const absDeltaX = Math.abs(deltaX);
 
-            // 始终跟随手指移动，让滑动更跟手
-            setSwipeOffset(deltaX);
+                // 始终跟随手指移动，让滑动更跟手
+                setSwipeOffset(deltaX);
 
-            // 只有当水平滑动距离大于垂直滑动距离且超过阈值时才显示预览页面
-            if (absDeltaX > deltaY && absDeltaX > SWIPE_THRESHOLD) {
-                setIsSwiping(true);
-                const isLeftSwipe = deltaX < 0;
-                if (readingDirection === ReadingDirection.LTR) {
-                    setPreviewDirection(isLeftSwipe ? 'next' : 'previous');
+                // 只有当水平滑动距离大于垂直滑动距离且超过阈值时才显示预览页面
+                if (absDeltaX > deltaY && absDeltaX > SWIPE_THRESHOLD) {
+                    setIsSwiping(true);
+                    const isLeftSwipe = deltaX < 0;
+                    if (readingDirection === ReadingDirection.LTR) {
+                        setPreviewDirection(isLeftSwipe ? 'next' : 'previous');
+                    } else {
+                        setPreviewDirection(isLeftSwipe ? 'previous' : 'next');
+                    }
                 } else {
-                    setPreviewDirection(isLeftSwipe ? 'previous' : 'next');
+                    // 如果不满足预览条件，清除预览状态但保持滑动跟手
+                    setIsSwiping(false);
+                    setPreviewDirection(null);
                 }
-            } else {
-                // 如果不满足预览条件，清除预览状态但保持滑动跟手
-                setIsSwiping(false);
-                setPreviewDirection(null);
             }
         },
-        [touchStart, readingMode, readingDirection],
+        [touchStart, readingMode, readingDirection, isSinglePageSwipeEnabled, isSwipeAnimationEnabled],
     );
 
     const handleTouchEnd = useCallback(
         (e: React.TouchEvent) => {
-            if (!touchStart || readingMode !== ReadingMode.SINGLE_PAGE) {
+            if (!touchStart || readingMode !== ReadingMode.SINGLE_PAGE || !isSinglePageSwipeEnabled) {
                 setTouchStart(null);
                 setIsSwiping(false);
                 setSwipeOffset(0);
@@ -146,21 +157,29 @@ export function useSwipeNavigate({
 
             // 只要水平滑动距离达到阈值且水平滑动距离大于垂直滑动距离就可以翻页
             if (distance > triggerThreshold && distance > deltaY) {
-                setIsTransitioning(true);
-                setTouchStart(null);
-                const targetOffset = deltaX > 0 ? window.innerWidth : -window.innerWidth;
-                setSwipeOffset(targetOffset);
+                if (isSwipeAnimationEnabled) {
+                    setIsTransitioning(true);
+                    setTouchStart(null);
+                    const targetOffset = deltaX > 0 ? window.innerWidth : -window.innerWidth;
+                    setSwipeOffset(targetOffset);
 
-                setTimeout(() => {
-                    setSwipeOffset(0);
-                    const shouldGoNext = deltaX < 0;
-                    const direction = shouldGoNext ? 'next' : 'previous';
-                    openPage(direction);
-                    setPreviewDirection(null);
-                    setIsSwiping(false);
-                    setIsTransitioning(false);
-                }, ANIMATION_DURATION);
-                return;
+                    setTimeout(() => {
+                        setSwipeOffset(0);
+                        const shouldGoNext = deltaX < 0;
+                        const direction = shouldGoNext ? 'next' : 'previous';
+                        openPage(direction);
+                        setPreviewDirection(null);
+                        setIsSwiping(false);
+                        setIsTransitioning(false);
+                    }, ANIMATION_DURATION);
+                    return;
+                }
+                setSwipeOffset(0);
+                const shouldGoNext = deltaX < 0;
+                const direction = shouldGoNext ? 'next' : 'previous';
+                openPage(direction);
+                setPreviewDirection(null);
+                setIsSwiping(false);
             }
 
             setTouchStart(null);
@@ -168,7 +187,15 @@ export function useSwipeNavigate({
             setSwipeOffset(0);
             setPreviewDirection(null);
         },
-        [touchStart, readingMode, readingDirection, openPage, swipePreviewThreshold],
+        [
+            touchStart,
+            readingMode,
+            readingDirection,
+            openPage,
+            swipePreviewThreshold,
+            isSinglePageSwipeEnabled,
+            isSwipeAnimationEnabled,
+        ],
     );
 
     const currentPage = useMemo(() => getPage(currentPageIndex, pages), [currentPageIndex, pages]);

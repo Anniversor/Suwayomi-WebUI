@@ -110,6 +110,8 @@ const BaseReaderViewer = forwardRef(
             shouldStretchPage,
             isStaticNav,
             swipePreviewThreshold,
+            isSinglePageSwipeEnabled,
+            isSwipeAnimationEnabled,
             readerNavBarWidth,
             setScrollbarXSize,
             setScrollbarYSize,
@@ -153,6 +155,8 @@ const BaseReaderViewer = forwardRef(
                 | 'shouldStretchPage'
                 | 'isStaticNav'
                 | 'swipePreviewThreshold'
+                | 'isSinglePageSwipeEnabled'
+                | 'isSwipeAnimationEnabled'
             > &
             Pick<TReaderScrollbarContext, 'setScrollbarXSize' | 'setScrollbarYSize'> &
             Pick<NavbarContextType, 'readerNavBarWidth'> &
@@ -213,6 +217,8 @@ const BaseReaderViewer = forwardRef(
             pages,
             containerRef: scrollElementRef,
             transitionPageMode,
+            isSinglePageSwipeEnabled,
+            isSwipeAnimationEnabled,
         });
 
         const imageRefs = useRef<(HTMLElement | null)[]>(pages.map(() => null));
@@ -599,5 +605,7 @@ export const ReaderViewer = withPropsFrom(
         'setReaderStateChapters',
         'isCurrentChapterReady',
         'swipePreviewThreshold',
+        'isSinglePageSwipeEnabled',
+        'isSwipeAnimationEnabled',
     ],
 );

@@ -822,6 +822,8 @@
                 "custom_scroll_amount": "自定义滚动距离",
                 "skip_filtered_chapters": "跳过已过滤的章节",
                 "swipe_preview_threshold": "滑动预览阈值",
+                "is_single_page_swipe_enabled": "在单页模式下启用滑动导航",
+                "is_swipe_animation_enabled": "启用滑动动画",
                 "unchangeable_in_reader": "在阅读器打开时无法更改设置"
             },
             "reader_type": {

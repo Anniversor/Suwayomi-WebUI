@@ -381,6 +381,12 @@ export const APP_METADATA: Record<
         toConstrainedValue: (value: number) =>
             coerceIn(value, SWIPE_PREVIEW_THRESHOLD.min, SWIPE_PREVIEW_THRESHOLD.max),
     },
+    isSinglePageSwipeEnabled: {
+        convert: convertToBoolean,
+    },
+    isSwipeAnimationEnabled: {
+        convert: convertToBoolean,
+    },
 } as const;
 
 export const VALID_APP_METADATA_KEYS = Object.keys(APP_METADATA);

@@ -136,6 +136,17 @@ export const ReaderBehaviourSettings = ({
                 checked={settings.shouldInformAboutScanlatorChange}
                 onChange={(_, checked) => updateSetting('shouldInformAboutScanlatorChange', checked)}
             />
+            <CheckboxInput
+                label={t('reader.settings.label.is_single_page_swipe_enabled')}
+                checked={settings.isSinglePageSwipeEnabled.value}
+                onChange={(_, checked) => updateSetting('isSinglePageSwipeEnabled', checked)}
+            />
+            <CheckboxInput
+                label={t('reader.settings.label.is_swipe_animation_enabled')}
+                checked={settings.isSwipeAnimationEnabled.value}
+                onChange={(_, checked) => updateSetting('isSwipeAnimationEnabled', checked)}
+                disabled={!settings.isSinglePageSwipeEnabled.value}
+            />
             <ReaderSettingAutoScroll
                 autoScroll={settings.autoScroll}
                 setAutoScroll={(...args) => updateSetting('autoScroll', ...args)}

@@ -249,6 +249,8 @@ export const DEFAULT_READER_SETTINGS: IReaderSettings = {
     shouldUseInfiniteScroll: true,
     shouldShowTransitionPage: true,
     swipePreviewThreshold: SWIPE_PREVIEW_THRESHOLD.default,
+    isSinglePageSwipeEnabled: true,
+    isSwipeAnimationEnabled: true,
 };
 
 export const READER_PROGRESS_BAR_POSITION_TO_PLACEMENT: Record<ProgressBarPosition, TooltipProps['placement']> = {
