@@ -64,6 +64,7 @@ import {
     getReaderChapterViewerCurrentPageIndex,
     getReaderChapterViewResumeMode,
 } from '@/modules/reader/utils/Reader.utils.ts';
+import { getPage } from '@/modules/reader/utils/ReaderProgressBar.utils.tsx';
 import { coerceIn, noOp } from '@/lib/HelperFunctions.ts';
 import { useNavBarContext } from '@/modules/navigation-bar/contexts/NavbarContext.tsx';
 import { NavbarContextType } from '@/modules/navigation-bar/NavigationBar.types.ts';
@@ -204,9 +205,8 @@ const BaseReaderViewer = forwardRef(
 
         const {
             isSwiping,
-            swipeOffset,
+            scrollOffset,
             isTransitioning,
-            previewPageUrl,
             previewDirection,
             handleTouchStart,
             handleTouchMove,
@@ -228,38 +228,17 @@ const BaseReaderViewer = forwardRef(
 
         // 优化预览页面样式计算，避免每次渲染时重复计算
         const previewPageStyles = useMemo(() => {
-            if (!previewDirection || swipeOffset === 0) return null;
+            if (!isSwiping && !isTransitioning) return null;
 
-            const progress = (Math.abs(swipeOffset) / window.innerWidth) * 100;
-            const isLTR = readingDirection === ReadingDirection.LTR;
-            const isNext = previewDirection === 'next';
-            const isSwipeLeft = swipeOffset < 0;
-
-            // 计算初始位置
-            let left: string;
-            if (isNext) {
-                left = isLTR ? '100%' : '-100%';
-            } else {
-                left = isLTR ? '-100%' : '100%';
-            }
-
-            // 计算变换
-            let shouldMove: boolean;
-            if (isNext) {
-                shouldMove = isLTR ? isSwipeLeft : !isSwipeLeft;
-            } else {
-                shouldMove = isLTR ? !isSwipeLeft : isSwipeLeft;
-            }
-
-            const transform = shouldMove ? `translateX(${isSwipeLeft ? '-' : ''}${progress}%)` : 'translateX(0)';
-
-            return { left, transform };
-        }, [previewDirection, swipeOffset, readingDirection]);
+            return {
+                transform: `translateX(${scrollOffset}px)`,
+            };
+        }, [isSwiping, isTransitioning, scrollOffset]);
 
         // 优化主页面transform计算
         const mainPageTransform = useMemo(
-            () => (readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${swipeOffset}px)` : 'none'),
-            [readingMode, swipeOffset],
+            () => (readingMode === ReadingMode.SINGLE_PAGE ? `translateX(${scrollOffset}px)` : 'none'),
+            [readingMode, scrollOffset],
         );
 
         // 优化transition样式计算
@@ -389,6 +368,28 @@ const BaseReaderViewer = forwardRef(
             throw new Error('ReaderViewer: illegal state - initialChapter and currentChapter should not be undefined');
         }
 
+        // 单页模式下的预渲染页面逻辑
+        const prerenderedPages = useMemo(() => {
+            if (readingMode !== ReadingMode.SINGLE_PAGE || !pages.length) {
+                return { previous: null, next: null };
+            }
+
+            const currentPage = getPage(currentPageIndex, pages);
+            const previousPageIndex = currentPage.pagesIndex > 0 ? currentPage.pagesIndex - 1 : null;
+            const nextPageIndex = currentPage.pagesIndex < pages.length - 1 ? currentPage.pagesIndex + 1 : null;
+
+            const getPrerenderPageUrl = (pageIndex: number | null) => {
+                if (pageIndex === null) return null;
+                const page = pages.find((p) => p.primary.index === pageIndex || p.secondary?.index === pageIndex);
+                return page?.primary.index === pageIndex ? page.primary.url : page?.secondary?.url || null;
+            };
+
+            return {
+                previous: getPrerenderPageUrl(previousPageIndex),
+                next: getPrerenderPageUrl(nextPageIndex),
+            };
+        }, [readingMode, currentPageIndex, pages]);
+
         return (
             <Box
                 sx={{
@@ -398,41 +399,88 @@ const BaseReaderViewer = forwardRef(
                     overflow: 'hidden',
                 }}
             >
-                {/* 预览页面层 - 放在Stack外面 */}
-                {previewPageUrl && (isSwiping || isTransitioning) && swipeOffset !== 0 && previewPageStyles && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: previewPageStyles.left,
-                            transform: previewPageStyles.transform,
-                            width: '100%',
-                            height: '100%',
-                            opacity: 1,
-                            pointerEvents: 'none',
-                            zIndex: 0,
-                            overflow: 'hidden',
-                            transition: transitionStyle,
-                        }}
-                    >
-                        <SpinnerImage
-                            src={previewPageUrl}
-                            alt="Preview page"
-                            priority={Priority.HIGH}
-                            shouldLoad
-                            imgStyle={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                objectPosition: 'center',
-                            }}
-                            spinnerStyle={{
-                                width: '100%',
-                                height: '100%',
-                                backgroundColor: 'transparent',
-                            }}
-                        />
-                    </Box>
+                {/* 单页模式下的预渲染页面 - 始终渲染但隐藏 */}
+                {readingMode === ReadingMode.SINGLE_PAGE && (
+                    <>
+                        {/* 预渲染上一页 */}
+                        {prerenderedPages.previous && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: readingDirection === ReadingDirection.LTR ? '-100%' : '100%',
+                                    width: '100%',
+                                    height: '100%',
+                                    opacity: previewDirection === 'previous' && (isSwiping || isTransitioning) ? 1 : 0,
+                                    pointerEvents: 'none',
+                                    zIndex: 0,
+                                    overflow: 'hidden',
+                                    transform:
+                                        previewDirection === 'previous' && previewPageStyles
+                                            ? previewPageStyles.transform
+                                            : 'translateX(0)',
+                                    transition: transitionStyle,
+                                }}
+                            >
+                                <SpinnerImage
+                                    src={prerenderedPages.previous}
+                                    alt="Previous page"
+                                    priority={Priority.HIGH}
+                                    shouldLoad
+                                    imgStyle={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'contain',
+                                        objectPosition: 'center',
+                                    }}
+                                    spinnerStyle={{
+                                        width: '100%',
+                                        height: '100%',
+                                        backgroundColor: 'transparent',
+                                    }}
+                                />
+                            </Box>
+                        )}
+                        {/* 预渲染下一页 */}
+                        {prerenderedPages.next && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: readingDirection === ReadingDirection.LTR ? '100%' : '-100%',
+                                    width: '100%',
+                                    height: '100%',
+                                    opacity: previewDirection === 'next' && (isSwiping || isTransitioning) ? 1 : 0,
+                                    pointerEvents: 'none',
+                                    zIndex: 0,
+                                    overflow: 'hidden',
+                                    transform:
+                                        previewDirection === 'next' && previewPageStyles
+                                            ? previewPageStyles.transform
+                                            : 'translateX(0)',
+                                    transition: transitionStyle,
+                                }}
+                            >
+                                <SpinnerImage
+                                    src={prerenderedPages.next}
+                                    alt="Next page"
+                                    priority={Priority.HIGH}
+                                    shouldLoad
+                                    imgStyle={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'contain',
+                                        objectPosition: 'center',
+                                    }}
+                                    spinnerStyle={{
+                                        width: '100%',
+                                        height: '100%',
+                                        backgroundColor: 'transparent',
+                                    }}
+                                />
+                            </Box>
+                        )}
+                    </>
                 )}
                 <Stack
                     ref={mergedRef}

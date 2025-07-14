@@ -41,8 +41,8 @@ export function useSwipeNavigate({
 }: UseSwipeNavigateProps) {
     const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
     const [isSwiping, setIsSwiping] = useState(false);
-    const [swipeOffset, setSwipeOffset] = useState(0);
-    const [previewDirection, setPreviewDirection] = useState<'next' | 'previous' | null>(null);
+    const [scrollOffset, setScrollOffset] = useState(0);
+    const [previewDirection, setPreviewDirection] = useState<'previous' | 'next' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
 
     // 使用ref来避免频繁的状态更新
@@ -55,7 +55,7 @@ export function useSwipeNavigate({
     const resetSwipeState = useCallback(() => {
         setTouchStart(null);
         setIsSwiping(false);
-        setSwipeOffset(0);
+        setScrollOffset(0);
         setPreviewDirection(null);
         currentOffsetRef.current = 0;
     }, []);
@@ -123,7 +123,7 @@ export function useSwipeNavigate({
                 });
                 // 重置其他状态
                 setIsSwiping(false);
-                setSwipeOffset(0);
+                setScrollOffset(0);
                 setPreviewDirection(null);
                 currentOffsetRef.current = 0;
             }
@@ -157,7 +157,7 @@ export function useSwipeNavigate({
                 }
 
                 animationFrameRef.current = requestAnimationFrame(() => {
-                    setSwipeOffset(currentOffsetRef.current);
+                    setScrollOffset(currentOffsetRef.current);
 
                     // 只有当水平滑动距离大于垂直滑动距离时才显示预览页面
                     if (absDeltaX > deltaY) {
@@ -204,7 +204,7 @@ export function useSwipeNavigate({
                     setIsTransitioning(true);
                     setTouchStart(null);
                     const targetOffset = deltaX > 0 ? window.innerWidth : -window.innerWidth;
-                    setSwipeOffset(targetOffset);
+                    setScrollOffset(targetOffset);
                     currentOffsetRef.current = targetOffset;
 
                     setTimeout(() => {
@@ -271,7 +271,7 @@ export function useSwipeNavigate({
 
     return {
         isSwiping,
-        swipeOffset,
+        scrollOffset,
         isTransitioning,
         previewPageUrl,
         previewDirection,
