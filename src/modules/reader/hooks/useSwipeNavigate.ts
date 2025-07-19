@@ -45,9 +45,11 @@ export function useSwipeNavigate({
     const [previewDirection, setPreviewDirection] = useState<'previous' | 'next' | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
 
-    // 使用ref来避免频繁的状态更新
+    // 使用ref来避免频繁的状态更新和内存泄漏
     const animationFrameRef = useRef<number | null>(null);
     const currentOffsetRef = useRef(0);
+    const touchStartRef = useRef(touchStart);
+    const isTransitioningRef = useRef(isTransitioning);
 
     const openPage = ReaderControls.useOpenPage();
 
@@ -90,11 +92,21 @@ export function useSwipeNavigate({
         return undefined;
     }, [readingMode, containerRef, isSinglePageSwipeEnabled]);
 
-    // 清理动画帧
+    // 同步ref与state
+    useEffect(() => {
+        touchStartRef.current = touchStart;
+    }, [touchStart]);
+
+    useEffect(() => {
+        isTransitioningRef.current = isTransitioning;
+    }, [isTransitioning]);
+
+    // 清理动画帧和事件监听器
     useEffect(
         () => () => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
             }
         },
         [],
@@ -102,6 +114,8 @@ export function useSwipeNavigate({
 
     const handleTouchStart = useCallback(
         (e: React.TouchEvent) => {
+            if (isTransitioningRef.current) return;
+
             if (e.touches.length === 1 && readingMode === ReadingMode.SINGLE_PAGE && isSinglePageSwipeEnabled) {
                 const touch = e.touches[0];
 
@@ -134,18 +148,19 @@ export function useSwipeNavigate({
     const handleTouchMove = useCallback(
         (e: React.TouchEvent) => {
             if (
-                !touchStart ||
+                !touchStartRef.current ||
                 e.touches.length !== 1 ||
                 readingMode !== ReadingMode.SINGLE_PAGE ||
-                !isSinglePageSwipeEnabled
+                !isSinglePageSwipeEnabled ||
+                isTransitioningRef.current
             ) {
                 return;
             }
 
             if (isSwipeAnimationEnabled) {
                 const touch = e.touches[0];
-                const deltaX = touch.clientX - touchStart.x;
-                const deltaY = Math.abs(touch.clientY - touchStart.y);
+                const deltaX = touch.clientX - touchStartRef.current.x;
+                const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
                 const absDeltaX = Math.abs(deltaX);
 
                 // 更新当前偏移量到ref，避免频繁状态更新
@@ -160,23 +175,25 @@ export function useSwipeNavigate({
                     setScrollOffset(currentOffsetRef.current);
 
                     // 只有当水平滑动距离大于垂直滑动距离时才显示预览页面
-                    if (absDeltaX > deltaY) {
+                    if (absDeltaX > deltaY && absDeltaX > 5) {
+                        // 添加最小阈值
                         setIsSwiping(true);
                         const isLeftSwipe = deltaX < 0;
+                        let direction: 'next' | 'previous';
                         if (readingDirection === ReadingDirection.LTR) {
-                            setPreviewDirection(isLeftSwipe ? 'next' : 'previous');
+                            direction = isLeftSwipe ? 'next' : 'previous';
                         } else {
-                            setPreviewDirection(isLeftSwipe ? 'previous' : 'next');
+                            direction = isLeftSwipe ? 'previous' : 'next';
                         }
+                        setPreviewDirection(direction);
                     } else {
-                        // 如果不满足预览条件，清除预览状态但保持滑动跟手
                         setIsSwiping(false);
                         setPreviewDirection(null);
                     }
                 });
             }
         },
-        [touchStart, readingMode, readingDirection, isSinglePageSwipeEnabled, isSwipeAnimationEnabled],
+        [readingMode, readingDirection, isSinglePageSwipeEnabled, isSwipeAnimationEnabled],
     );
 
     const handleTouchEnd = useCallback(
@@ -187,19 +204,23 @@ export function useSwipeNavigate({
                 animationFrameRef.current = null;
             }
 
-            if (!touchStart || readingMode !== ReadingMode.SINGLE_PAGE || !isSinglePageSwipeEnabled) {
+            if (!touchStartRef.current || readingMode !== ReadingMode.SINGLE_PAGE || !isSinglePageSwipeEnabled) {
                 resetSwipeState();
                 return;
             }
 
             const touch = e.changedTouches[0];
-            const deltaX = touch.clientX - touchStart.x;
-            const deltaY = Math.abs(touch.clientY - touchStart.y);
+            const deltaX = touch.clientX - touchStartRef.current.x;
+            const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
             const distance = Math.abs(deltaX);
             const triggerThreshold = window.innerWidth * (swipePreviewThreshold / 100);
+            const swipeTime = Date.now() - touchStartRef.current.time;
 
-            // 只要水平滑动距离达到阈值且水平滑动距离大于垂直滑动距离就可以翻页
-            if (distance > triggerThreshold && distance > deltaY) {
+            // 快速滑动（fling）检测或阈值检测
+            const isFling = swipeTime < 300 && distance > 50;
+            const shouldTrigger = isFling || (distance > triggerThreshold && distance > deltaY);
+
+            if (shouldTrigger) {
                 if (isSwipeAnimationEnabled) {
                     setIsTransitioning(true);
                     setTouchStart(null);
@@ -208,23 +229,18 @@ export function useSwipeNavigate({
                     currentOffsetRef.current = targetOffset;
 
                     setTimeout(() => {
-                        const shouldGoNext = deltaX < 0;
-                        const direction = shouldGoNext ? 'next' : 'previous';
-                        openPage(direction);
+                        openPage(deltaX < 0 ? 'next' : 'previous');
                         resetSwipeState();
                         setIsTransitioning(false);
                     }, swipeAnimationSpeed);
                     return;
                 }
-                const shouldGoNext = deltaX < 0;
-                const direction = shouldGoNext ? 'next' : 'previous';
-                openPage(direction);
+                openPage(deltaX < 0 ? 'next' : 'previous');
             }
 
             resetSwipeState();
         },
         [
-            touchStart,
             readingMode,
             readingDirection,
             openPage,
@@ -237,36 +253,27 @@ export function useSwipeNavigate({
     );
 
     const currentPage = useMemo(() => getPage(currentPageIndex, pages), [currentPageIndex, pages]);
+
     const previewPageIndex = useMemo(() => {
-        if (!previewDirection) return null;
+        if (!previewDirection || transitionPageMode !== ReaderTransitionPageMode.NONE) return null;
 
-        // 如果当前处于过渡页面状态，不显示预览
-        if (transitionPageMode !== ReaderTransitionPageMode.NONE) {
-            return null;
-        }
+        const { pagesIndex } = currentPage;
+        const isBoundary =
+            (previewDirection === 'previous' && pagesIndex === 0) ||
+            (previewDirection === 'next' && pagesIndex === pages.length - 1);
 
-        try {
-            // 检查是否在章节边界
-            if (previewDirection === 'previous' && currentPage.pagesIndex === 0) {
-                return null; // 在第一页时，不显示上一页预览
-            }
-            if (previewDirection === 'next' && currentPage.pagesIndex === pages.length - 1) {
-                return null; // 在最后一页时，不显示下一页预览
-            }
-            return getNextPageIndex(previewDirection, currentPage.pagesIndex, pages);
-        } catch {
-            return null;
-        }
-    }, [previewDirection, currentPage.pagesIndex, pages, transitionPageMode]);
+        return isBoundary ? null : getNextPageIndex(previewDirection, pagesIndex, pages);
+    }, [previewDirection, currentPage, pages, transitionPageMode]);
 
     const previewPageUrl = useMemo(() => {
         if (previewPageIndex === null) return null;
+
         const previewPage = pages.find(
             (page) => page.primary.index === previewPageIndex || page.secondary?.index === previewPageIndex,
         );
-        return previewPage?.primary.index === previewPageIndex
-            ? previewPage.primary.url
-            : previewPage?.secondary?.url || null;
+
+        if (!previewPage) return null;
+        return previewPage.primary.index === previewPageIndex ? previewPage.primary.url : previewPage.secondary?.url;
     }, [previewPageIndex, pages]);
 
     return {

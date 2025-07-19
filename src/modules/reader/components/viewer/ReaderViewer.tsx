@@ -72,9 +72,7 @@ import { useReaderPreserveScrollPosition } from '@/modules/reader/hooks/useReade
 
 import { ChapterIdInfo } from '@/modules/chapter/Chapter.types.ts';
 import { useSwipeNavigate } from '@/modules/reader/hooks/useSwipeNavigate.ts';
-
-import { SpinnerImage } from '@/modules/core/components/SpinnerImage.tsx';
-import { Priority } from '@/lib/Queue.ts';
+import { PrerenderedPage } from '@/modules/reader/components/viewer/PrerenderedPage';
 
 const READING_MODE_TO_IN_VIEWPORT_TYPE: Record<ReadingMode, PageInViewportType> = {
     [ReadingMode.SINGLE_PAGE]: PageInViewportType.X,
@@ -375,18 +373,16 @@ const BaseReaderViewer = forwardRef(
             }
 
             const currentPage = getPage(currentPageIndex, pages);
-            const previousPageIndex = currentPage.pagesIndex > 0 ? currentPage.pagesIndex - 1 : null;
-            const nextPageIndex = currentPage.pagesIndex < pages.length - 1 ? currentPage.pagesIndex + 1 : null;
+            const { pagesIndex } = currentPage;
 
-            const getPrerenderPageUrl = (pageIndex: number | null) => {
-                if (pageIndex === null) return null;
+            const getPrerenderPageUrl = (pageIndex: number) => {
                 const page = pages.find((p) => p.primary.index === pageIndex || p.secondary?.index === pageIndex);
                 return page?.primary.index === pageIndex ? page.primary.url : page?.secondary?.url || null;
             };
 
             return {
-                previous: getPrerenderPageUrl(previousPageIndex),
-                next: getPrerenderPageUrl(nextPageIndex),
+                previous: pagesIndex > 0 ? getPrerenderPageUrl(pagesIndex - 1) : null,
+                next: pagesIndex < pages.length - 1 ? getPrerenderPageUrl(pagesIndex + 1) : null,
             };
         }, [readingMode, currentPageIndex, pages]);
 
@@ -402,83 +398,31 @@ const BaseReaderViewer = forwardRef(
                 {/* 单页模式下的预渲染页面 - 始终渲染但隐藏 */}
                 {readingMode === ReadingMode.SINGLE_PAGE && (
                     <>
-                        {/* 预渲染上一页 */}
                         {prerenderedPages.previous && (
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: readingDirection === ReadingDirection.LTR ? '-100%' : '100%',
-                                    width: '100%',
-                                    height: '100%',
-                                    opacity: previewDirection === 'previous' && (isSwiping || isTransitioning) ? 1 : 0,
-                                    pointerEvents: 'none',
-                                    zIndex: 0,
-                                    overflow: 'hidden',
-                                    transform:
-                                        previewDirection === 'previous' && previewPageStyles
-                                            ? previewPageStyles.transform
-                                            : 'translateX(0)',
-                                    transition: transitionStyle,
-                                }}
-                            >
-                                <SpinnerImage
-                                    src={prerenderedPages.previous}
-                                    alt="Previous page"
-                                    priority={Priority.HIGH}
-                                    shouldLoad
-                                    imgStyle={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                        objectPosition: 'center',
-                                    }}
-                                    spinnerStyle={{
-                                        width: '100%',
-                                        height: '100%',
-                                        backgroundColor: 'transparent',
-                                    }}
-                                />
-                            </Box>
+                            <PrerenderedPage
+                                src={prerenderedPages.previous}
+                                alt="Previous page"
+                                position="previous"
+                                readingDirection={readingDirection}
+                                previewDirection={previewDirection}
+                                isSwiping={isSwiping}
+                                isTransitioning={isTransitioning}
+                                previewPageStyles={previewPageStyles}
+                                transitionStyle={transitionStyle}
+                            />
                         )}
-                        {/* 预渲染下一页 */}
                         {prerenderedPages.next && (
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: readingDirection === ReadingDirection.LTR ? '100%' : '-100%',
-                                    width: '100%',
-                                    height: '100%',
-                                    opacity: previewDirection === 'next' && (isSwiping || isTransitioning) ? 1 : 0,
-                                    pointerEvents: 'none',
-                                    zIndex: 0,
-                                    overflow: 'hidden',
-                                    transform:
-                                        previewDirection === 'next' && previewPageStyles
-                                            ? previewPageStyles.transform
-                                            : 'translateX(0)',
-                                    transition: transitionStyle,
-                                }}
-                            >
-                                <SpinnerImage
-                                    src={prerenderedPages.next}
-                                    alt="Next page"
-                                    priority={Priority.HIGH}
-                                    shouldLoad
-                                    imgStyle={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                        objectPosition: 'center',
-                                    }}
-                                    spinnerStyle={{
-                                        width: '100%',
-                                        height: '100%',
-                                        backgroundColor: 'transparent',
-                                    }}
-                                />
-                            </Box>
+                            <PrerenderedPage
+                                src={prerenderedPages.next}
+                                alt="Next page"
+                                position="next"
+                                readingDirection={readingDirection}
+                                previewDirection={previewDirection}
+                                isSwiping={isSwiping}
+                                isTransitioning={isTransitioning}
+                                previewPageStyles={previewPageStyles}
+                                transitionStyle={transitionStyle}
+                            />
                         )}
                     </>
                 )}
