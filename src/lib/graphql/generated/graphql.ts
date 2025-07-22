@@ -683,6 +683,7 @@ export type ExtensionType = {
 export type FetchChapterPagesInput = {
   chapterId: Scalars['Int']['input'];
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  format?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FetchChapterPagesPayload = {
@@ -1550,6 +1551,7 @@ export type PartialSettingsType = Settings & {
   basicAuthUsername?: Maybe<Scalars['String']['output']>;
   debugLogsEnabled?: Maybe<Scalars['Boolean']['output']>;
   downloadAsCbz?: Maybe<Scalars['Boolean']['output']>;
+  downloadConversions?: Maybe<Array<SettingsDownloadConversionType>>;
   downloadsPath?: Maybe<Scalars['String']['output']>;
   electronPath?: Maybe<Scalars['String']['output']>;
   excludeCompleted?: Maybe<Scalars['Boolean']['output']>;
@@ -1608,6 +1610,7 @@ export type PartialSettingsTypeInput = {
   backupTime?: InputMaybe<Scalars['String']['input']>;
   debugLogsEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   downloadAsCbz?: InputMaybe<Scalars['Boolean']['input']>;
+  downloadConversions?: InputMaybe<Array<SettingsDownloadConversionTypeInput>>;
   downloadsPath?: InputMaybe<Scalars['String']['input']>;
   electronPath?: InputMaybe<Scalars['String']['input']>;
   excludeCompleted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1996,6 +1999,7 @@ export type Settings = {
   basicAuthUsername?: Maybe<Scalars['String']['output']>;
   debugLogsEnabled?: Maybe<Scalars['Boolean']['output']>;
   downloadAsCbz?: Maybe<Scalars['Boolean']['output']>;
+  downloadConversions?: Maybe<Array<SettingsDownloadConversion>>;
   downloadsPath?: Maybe<Scalars['String']['output']>;
   electronPath?: Maybe<Scalars['String']['output']>;
   excludeCompleted?: Maybe<Scalars['Boolean']['output']>;
@@ -2041,6 +2045,25 @@ export type Settings = {
   webUIUpdateCheckInterval?: Maybe<Scalars['Float']['output']>;
 };
 
+export type SettingsDownloadConversion = {
+  compressionLevel?: Maybe<Scalars['Float']['output']>;
+  mimeType: Scalars['String']['output'];
+  target: Scalars['String']['output'];
+};
+
+export type SettingsDownloadConversionType = SettingsDownloadConversion & {
+  __typename?: 'SettingsDownloadConversionType';
+  compressionLevel?: Maybe<Scalars['Float']['output']>;
+  mimeType: Scalars['String']['output'];
+  target: Scalars['String']['output'];
+};
+
+export type SettingsDownloadConversionTypeInput = {
+  compressionLevel?: InputMaybe<Scalars['Float']['input']>;
+  mimeType: Scalars['String']['input'];
+  target: Scalars['String']['input'];
+};
+
 export type SettingsType = Settings & {
   __typename?: 'SettingsType';
   authMode: AuthMode;
@@ -2048,7 +2071,7 @@ export type SettingsType = Settings & {
   authUsername: Scalars['String']['output'];
   /** @deprecated Replaced with autoDownloadNewChaptersLimit, replace with autoDownloadNewChaptersLimit */
   autoDownloadAheadLimit: Scalars['Int']['output'];
-  autoDownloadIgnoreReUploads?: Maybe<Scalars['Boolean']['output']>;
+  autoDownloadIgnoreReUploads: Scalars['Boolean']['output'];
   autoDownloadNewChapters: Scalars['Boolean']['output'];
   autoDownloadNewChaptersLimit: Scalars['Int']['output'];
   backupInterval: Scalars['Int']['output'];
@@ -2063,6 +2086,7 @@ export type SettingsType = Settings & {
   basicAuthUsername: Scalars['String']['output'];
   debugLogsEnabled: Scalars['Boolean']['output'];
   downloadAsCbz: Scalars['Boolean']['output'];
+  downloadConversions: Array<SettingsDownloadConversionType>;
   downloadsPath: Scalars['String']['output'];
   electronPath: Scalars['String']['output'];
   excludeCompleted: Scalars['Boolean']['output'];
@@ -2970,7 +2994,7 @@ export type MangaScreenFieldsFragment = { __typename?: 'MangaType', artist?: str
 
 export type MangaLibraryDuplicateScreenFieldsFragment = { __typename?: 'MangaType', description?: string | null, id: number, title: string, thumbnailUrl?: string | null, thumbnailUrlLastFetched?: string | null, inLibrary: boolean, initialized: boolean, sourceId: string, unreadCount: number, downloadCount: number, bookmarkCount: number, hasDuplicateChapters: boolean, chapters: { __typename?: 'ChapterNodeList', totalCount: number } };
 
-export type ServerSettingsFragment = { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads?: boolean | null, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder };
+export type ServerSettingsFragment = { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads: boolean, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder, downloadConversions: Array<{ __typename?: 'SettingsDownloadConversionType', mimeType: string, target: string, compressionLevel?: number | null }> };
 
 export type SourceMetaFieldsFragment = { __typename?: 'SourceMetaType', sourceId: string, key: string, value: string };
 
@@ -2988,11 +3012,11 @@ export type TrackerBaseFieldsFragment = { __typename?: 'TrackerType', id: number
 
 export type TrackerSettingFieldsFragment = { __typename?: 'TrackerType', authUrl?: string | null, id: number, name: string, icon: string, isLoggedIn: boolean, isTokenExpired: boolean };
 
-export type TrackerBindFieldsFragment = { __typename?: 'TrackerType', icon: string, supportsTrackDeletion: boolean, scores: Array<string>, id: number, name: string, isLoggedIn: boolean, isTokenExpired: boolean, statuses: Array<{ __typename?: 'TrackStatusType', name: string, value: number }>, trackRecords: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string }> } };
+export type TrackerBindFieldsFragment = { __typename?: 'TrackerType', icon: string, supportsPrivateTracking: boolean, supportsTrackDeletion: boolean, scores: Array<string>, id: number, name: string, isLoggedIn: boolean, isTokenExpired: boolean, statuses: Array<{ __typename?: 'TrackStatusType', name: string, value: number }>, trackRecords: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean }> } };
 
-export type TrackRecordSearchFieldsFragment = { __typename?: 'TrackSearchType', id: number, remoteId: string, title: string, trackingUrl: string, coverUrl: string, publishingType: string, startDate: string, publishingStatus: string, summary: string };
+export type TrackRecordSearchFieldsFragment = { __typename?: 'TrackSearchType', id: number, remoteId: string, title: string, trackingUrl: string, coverUrl: string, publishingType: string, startDate: string, publishingStatus: string, summary: string, score: number, totalChapters: number };
 
-export type TrackRecordBindFieldsFragment = { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string };
+export type TrackRecordBindFieldsFragment = { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean };
 
 export type UpdaterMangaFieldsFragment = { __typename?: 'MangaUpdateType', status: MangaJobStatus, manga: { __typename?: 'MangaType', id: number, title: string, thumbnailUrl?: string | null, unreadCount: number, downloadCount: number, bookmarkCount: number, hasDuplicateChapters: boolean, chapters: { __typename?: 'ChapterNodeList', totalCount: number }, firstUnreadChapter?: { __typename?: 'ChapterType', id: number, sourceOrder: number, isRead: boolean, mangaId: number } | null, lastReadChapter?: { __typename?: 'ChapterType', id: number, sourceOrder: number, lastReadAt: string } | null, latestReadChapter?: { __typename?: 'ChapterType', id: number, sourceOrder: number, lastReadAt: string } | null, latestFetchedChapter?: { __typename?: 'ChapterType', id: number, fetchedAt: string } | null, latestUploadedChapter?: { __typename?: 'ChapterType', id: number, uploadDate: string } | null } };
 
@@ -3117,7 +3141,7 @@ export type UpdateChapterMutationVariables = Exact<{
 }>;
 
 
-export type UpdateChapterMutation = { __typename?: 'Mutation', updateChapter?: { __typename?: 'UpdateChapterPayload', chapter: { __typename?: 'ChapterType', id: number, isBookmarked?: boolean, isRead?: boolean, lastReadAt?: string, lastPageRead?: number, manga?: { __typename?: 'MangaType', id: number, unreadCount: number, bookmarkCount: number, lastReadChapter?: { __typename?: 'ChapterType', id: number } | null, latestReadChapter?: { __typename?: 'ChapterType', id: number } | null, firstUnreadChapter?: { __typename?: 'ChapterType', id: number } | null } } } | null, deleteDownloadedChapter?: { __typename?: 'DeleteDownloadedChapterPayload', chapters: { __typename?: 'ChapterType', id: number, isDownloaded: boolean, manga: { __typename?: 'MangaType', id: number, downloadCount: number } } } | null, trackProgress?: { __typename?: 'TrackProgressPayload', trackRecords: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string }> } | null };
+export type UpdateChapterMutation = { __typename?: 'Mutation', updateChapter?: { __typename?: 'UpdateChapterPayload', chapter: { __typename?: 'ChapterType', id: number, isBookmarked?: boolean, isRead?: boolean, lastReadAt?: string, lastPageRead?: number, manga?: { __typename?: 'MangaType', id: number, unreadCount: number, bookmarkCount: number, lastReadChapter?: { __typename?: 'ChapterType', id: number } | null, latestReadChapter?: { __typename?: 'ChapterType', id: number } | null, firstUnreadChapter?: { __typename?: 'ChapterType', id: number } | null } } } | null, deleteDownloadedChapter?: { __typename?: 'DeleteDownloadedChapterPayload', chapters: { __typename?: 'ChapterType', id: number, isDownloaded: boolean, manga: { __typename?: 'MangaType', id: number, downloadCount: number } } } | null, trackProgress?: { __typename?: 'TrackProgressPayload', trackRecords: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean }> } | null };
 
 export type UpdateChaptersMutationVariables = Exact<{
   input: UpdateChaptersInput;
@@ -3131,7 +3155,7 @@ export type UpdateChaptersMutationVariables = Exact<{
 }>;
 
 
-export type UpdateChaptersMutation = { __typename?: 'Mutation', updateChapters?: { __typename?: 'UpdateChaptersPayload', chapters: Array<{ __typename?: 'ChapterType', id: number, isBookmarked?: boolean, isRead?: boolean, lastReadAt?: string, lastPageRead?: number, manga?: { __typename?: 'MangaType', id: number, unreadCount: number, bookmarkCount: number, lastReadChapter?: { __typename?: 'ChapterType', id: number } | null, latestReadChapter?: { __typename?: 'ChapterType', id: number } | null, firstUnreadChapter?: { __typename?: 'ChapterType', id: number } | null } }> } | null, deleteDownloadedChapters?: { __typename?: 'DeleteDownloadedChaptersPayload', chapters: Array<{ __typename?: 'ChapterType', id: number, isDownloaded: boolean, manga: { __typename?: 'MangaType', id: number, downloadCount: number } }> } | null, trackProgress?: { __typename?: 'TrackProgressPayload', trackRecords: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string }> } | null };
+export type UpdateChaptersMutation = { __typename?: 'Mutation', updateChapters?: { __typename?: 'UpdateChaptersPayload', chapters: Array<{ __typename?: 'ChapterType', id: number, isBookmarked?: boolean, isRead?: boolean, lastReadAt?: string, lastPageRead?: number, manga?: { __typename?: 'MangaType', id: number, unreadCount: number, bookmarkCount: number, lastReadChapter?: { __typename?: 'ChapterType', id: number } | null, latestReadChapter?: { __typename?: 'ChapterType', id: number } | null, firstUnreadChapter?: { __typename?: 'ChapterType', id: number } | null } }> } | null, deleteDownloadedChapters?: { __typename?: 'DeleteDownloadedChaptersPayload', chapters: Array<{ __typename?: 'ChapterType', id: number, isDownloaded: boolean, manga: { __typename?: 'MangaType', id: number, downloadCount: number } }> } | null, trackProgress?: { __typename?: 'TrackProgressPayload', trackRecords: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean }> } | null };
 
 export type ClearDownloaderMutationVariables = Exact<{
   input?: InputMaybe<ClearDownloaderInput>;
@@ -3332,14 +3356,14 @@ export type ResetServerSettingsMutationVariables = Exact<{
 }>;
 
 
-export type ResetServerSettingsMutation = { __typename?: 'Mutation', resetSettings: { __typename?: 'ResetSettingsPayload', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads?: boolean | null, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder } } };
+export type ResetServerSettingsMutation = { __typename?: 'Mutation', resetSettings: { __typename?: 'ResetSettingsPayload', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads: boolean, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder, downloadConversions: Array<{ __typename?: 'SettingsDownloadConversionType', mimeType: string, target: string, compressionLevel?: number | null }> } } };
 
 export type UpdateServerSettingsMutationVariables = Exact<{
   input: SetSettingsInput;
 }>;
 
 
-export type UpdateServerSettingsMutation = { __typename?: 'Mutation', setSettings: { __typename?: 'SetSettingsPayload', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads?: boolean | null, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder } } };
+export type UpdateServerSettingsMutation = { __typename?: 'Mutation', setSettings: { __typename?: 'SetSettingsPayload', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads: boolean, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder, downloadConversions: Array<{ __typename?: 'SettingsDownloadConversionType', mimeType: string, target: string, compressionLevel?: number | null }> } } };
 
 export type GetSourceMangasFetchMutationVariables = Exact<{
   input: FetchSourceMangaInput;
@@ -3391,13 +3415,11 @@ export type TrackerLogoutMutationVariables = Exact<{
 export type TrackerLogoutMutation = { __typename?: 'Mutation', logoutTracker: { __typename?: 'LogoutTrackerPayload', tracker: { __typename?: 'TrackerType', authUrl?: string | null, id: number, name: string, icon: string, isLoggedIn: boolean, isTokenExpired: boolean } } };
 
 export type TrackerBindMutationVariables = Exact<{
-  mangaId: Scalars['Int']['input'];
-  remoteId: Scalars['LongString']['input'];
-  trackerId: Scalars['Int']['input'];
+  input: BindTrackInput;
 }>;
 
 
-export type TrackerBindMutation = { __typename?: 'Mutation', bindTrack: { __typename?: 'BindTrackPayload', trackRecord: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, trackerId: number }> } } } } };
+export type TrackerBindMutation = { __typename?: 'Mutation', bindTrack: { __typename?: 'BindTrackPayload', trackRecord: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean, manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, trackerId: number }> } } } } };
 
 export type TrackerUnbindMutationVariables = Exact<{
   input: UnbindTrackInput;
@@ -3411,14 +3433,14 @@ export type TrackerUpdateBindMutationVariables = Exact<{
 }>;
 
 
-export type TrackerUpdateBindMutation = { __typename?: 'Mutation', updateTrack: { __typename?: 'UpdateTrackPayload', trackRecord?: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, trackerId: number }> } } } | null } };
+export type TrackerUpdateBindMutation = { __typename?: 'Mutation', updateTrack: { __typename?: 'UpdateTrackPayload', trackRecord?: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean, manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, trackerId: number }> } } } | null } };
 
 export type TrackerFetchBindMutationVariables = Exact<{
   recordId: Scalars['Int']['input'];
 }>;
 
 
-export type TrackerFetchBindMutation = { __typename?: 'Mutation', fetchTrack: { __typename?: 'FetchTrackPayload', trackRecord: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string } } };
+export type TrackerFetchBindMutation = { __typename?: 'Mutation', fetchTrack: { __typename?: 'FetchTrackPayload', trackRecord: { __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean } } };
 
 export type UpdateLibraryMutationVariables = Exact<{
   input?: InputMaybe<UpdateLibraryInput>;
@@ -3629,7 +3651,7 @@ export type GetMangaTrackRecordsQueryVariables = Exact<{
 }>;
 
 
-export type GetMangaTrackRecordsQuery = { __typename?: 'Query', manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string }> } } };
+export type GetMangaTrackRecordsQuery = { __typename?: 'Query', manga: { __typename?: 'MangaType', id: number, trackRecords: { __typename?: 'TrackRecordNodeList', totalCount: number, nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean }> } } };
 
 export type GetMangaCategoriesQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -3646,7 +3668,7 @@ export type GetMangaToMigrateQueryVariables = Exact<{
 }>;
 
 
-export type GetMangaToMigrateQuery = { __typename?: 'Query', manga: { __typename?: 'MangaType', id: number, inLibrary: boolean, title: string, chapters?: { __typename?: 'ChapterNodeList', totalCount: number, nodes: Array<{ __typename?: 'ChapterType', id: number, chapterNumber: number, isRead: boolean, isDownloaded: boolean, isBookmarked: boolean, manga: { __typename?: 'MangaType', id: number } }> }, categories?: { __typename?: 'CategoryNodeList', nodes: Array<{ __typename?: 'CategoryType', id: number }> }, trackRecords?: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number }> } } };
+export type GetMangaToMigrateQuery = { __typename?: 'Query', manga: { __typename?: 'MangaType', id: number, inLibrary: boolean, title: string, chapters?: { __typename?: 'ChapterNodeList', totalCount: number, nodes: Array<{ __typename?: 'ChapterType', id: number, chapterNumber: number, isRead: boolean, isDownloaded: boolean, isBookmarked: boolean, manga: { __typename?: 'MangaType', id: number } }> }, categories?: { __typename?: 'CategoryNodeList', nodes: Array<{ __typename?: 'CategoryType', id: number }> }, trackRecords?: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, private: boolean }> } } };
 
 export type GetMangasBaseQueryVariables = Exact<{
   after?: InputMaybe<Scalars['Cursor']['input']>;
@@ -3725,7 +3747,7 @@ export type GetWebuiUpdateStatusQuery = { __typename?: 'Query', getWebUIUpdateSt
 export type GetServerSettingsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetServerSettingsQuery = { __typename?: 'Query', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads?: boolean | null, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder } };
+export type GetServerSettingsQuery = { __typename?: 'Query', settings: { __typename?: 'SettingsType', ip: string, port: number, socksProxyEnabled: boolean, socksProxyVersion: number, socksProxyHost: string, socksProxyPort: string, socksProxyUsername: string, socksProxyPassword: string, webUIFlavor: WebUiFlavor, initialOpenInBrowserEnabled: boolean, webUIInterface: WebUiInterface, electronPath: string, webUIChannel: WebUiChannel, webUIUpdateCheckInterval: number, downloadAsCbz: boolean, downloadsPath: string, autoDownloadNewChapters: boolean, excludeEntryWithUnreadChapters: boolean, autoDownloadNewChaptersLimit: number, autoDownloadIgnoreReUploads: boolean, extensionRepos: Array<string>, maxSourcesInParallel: number, excludeUnreadChapters: boolean, excludeNotStarted: boolean, excludeCompleted: boolean, globalUpdateInterval: number, updateMangas: boolean, authMode: AuthMode, authPassword: string, authUsername: string, debugLogsEnabled: boolean, systemTrayEnabled: boolean, maxLogFileSize: string, maxLogFiles: number, maxLogFolderSize: string, backupPath: string, backupTime: string, backupInterval: number, backupTTL: number, localSourcePath: string, flareSolverrEnabled: boolean, flareSolverrUrl: string, flareSolverrTimeout: number, flareSolverrSessionName: string, flareSolverrSessionTtl: number, flareSolverrAsResponseFallback: boolean, opdsUseBinaryFileSizes: boolean, opdsItemsPerPage: number, opdsEnablePageReadProgress: boolean, opdsMarkAsReadOnDownload: boolean, opdsShowOnlyUnreadChapters: boolean, opdsShowOnlyDownloadedChapters: boolean, opdsChapterSortOrder: SortOrder, downloadConversions: Array<{ __typename?: 'SettingsDownloadConversionType', mimeType: string, target: string, compressionLevel?: number | null }> } };
 
 export type GetSourceBrowseQueryVariables = Exact<{
   id: Scalars['LongString']['input'];
@@ -3766,7 +3788,7 @@ export type GetTrackersSettingsQuery = { __typename?: 'Query', trackers: { __typ
 export type GetTrackersBindQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetTrackersBindQuery = { __typename?: 'Query', trackers: { __typename?: 'TrackerNodeList', totalCount: number, pageInfo: { __typename?: 'PageInfo', endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: string | null }, nodes: Array<{ __typename?: 'TrackerType', icon: string, supportsTrackDeletion: boolean, scores: Array<string>, id: number, name: string, isLoggedIn: boolean, isTokenExpired: boolean, statuses: Array<{ __typename?: 'TrackStatusType', name: string, value: number }>, trackRecords: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string }> } }> } };
+export type GetTrackersBindQuery = { __typename?: 'Query', trackers: { __typename?: 'TrackerNodeList', totalCount: number, pageInfo: { __typename?: 'PageInfo', endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: string | null }, nodes: Array<{ __typename?: 'TrackerType', icon: string, supportsPrivateTracking: boolean, supportsTrackDeletion: boolean, scores: Array<string>, id: number, name: string, isLoggedIn: boolean, isTokenExpired: boolean, statuses: Array<{ __typename?: 'TrackStatusType', name: string, value: number }>, trackRecords: { __typename?: 'TrackRecordNodeList', nodes: Array<{ __typename?: 'TrackRecordType', id: number, remoteId: string, trackerId: number, remoteUrl: string, title: string, status: number, lastChapterRead: number, totalChapters: number, score: number, displayScore: string, startDate: string, finishDate: string, private: boolean }> } }> } };
 
 export type TrackerSearchQueryVariables = Exact<{
   query: Scalars['String']['input'];
@@ -3774,7 +3796,7 @@ export type TrackerSearchQueryVariables = Exact<{
 }>;
 
 
-export type TrackerSearchQuery = { __typename?: 'Query', searchTracker: { __typename?: 'SearchTrackerPayload', trackSearches: Array<{ __typename?: 'TrackSearchType', id: number, remoteId: string, title: string, trackingUrl: string, coverUrl: string, publishingType: string, startDate: string, publishingStatus: string, summary: string }> } };
+export type TrackerSearchQuery = { __typename?: 'Query', searchTracker: { __typename?: 'SearchTrackerPayload', trackSearches: Array<{ __typename?: 'TrackSearchType', id: number, remoteId: string, title: string, trackingUrl: string, coverUrl: string, publishingType: string, startDate: string, publishingStatus: string, summary: string, score: number, totalChapters: number }> } };
 
 export type GetUpdateStatusQueryVariables = Exact<{ [key: string]: never; }>;
 

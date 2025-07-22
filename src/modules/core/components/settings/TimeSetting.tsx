@@ -84,10 +84,11 @@ export const TimeSetting = ({
             </ListItemButton>
 
             <Dialog open={isDialogOpen} onClose={closeDialog}>
+                <DialogTitle>{settingName}</DialogTitle>
                 <DialogContent>
-                    <DialogTitle sx={{ paddingLeft: 0 }}>{settingName}</DialogTitle>
                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={dayjs.locale()}>
                         <TimePicker
+                            autoFocus
                             value={dayjs(dialogValue, 'HH:mm')}
                             defaultValue={dayjs(defaultValue, 'HH:mm')}
                             format="LT"

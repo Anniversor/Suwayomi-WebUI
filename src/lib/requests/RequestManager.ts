@@ -466,6 +466,10 @@ export class RequestManager {
         return `${this.getBaseUrl()}${apiVersion}${endpoint}`;
     }
 
+    public getWebviewUrl(url: string): string {
+        return `${this.getValidUrlFor('webview')}#${url}`;
+    }
+
     public clearBrowseCacheFor(sourceId: string) {
         const cacheKeys = this.cache.getMatchingKeys(
             new RegExp(`${CACHE_INITIAL_PAGES_FETCHING_KEY}|${CACHE_PAGES_KEY}|${CACHE_RESULTS_KEY}.*${sourceId}`),
@@ -3184,9 +3188,15 @@ export class RequestManager {
         mangaId: number,
         trackerId: number,
         remoteId: string,
+        asPrivate: boolean,
         options?: MutationOptions<TrackerBindMutation, TrackerBindMutationVariables>,
     ): AbortableApolloMutationResponse<TrackerBindMutation> {
-        return this.doRequest(GQLMethod.MUTATION, TRACKER_BIND, { mangaId, remoteId, trackerId }, options);
+        return this.doRequest(
+            GQLMethod.MUTATION,
+            TRACKER_BIND,
+            { input: { mangaId, remoteId, trackerId, private: asPrivate } },
+            options,
+        );
     }
 
     public unbindTracker(

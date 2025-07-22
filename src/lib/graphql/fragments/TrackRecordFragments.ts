@@ -19,6 +19,8 @@ export const TRACK_RECORD_SEARCH_FIELDS = gql`
         startDate
         publishingStatus
         summary
+        score
+        totalChapters
     }
 `;
 
@@ -36,5 +38,6 @@ export const TRACK_RECORD_BIND_FIELDS = gql`
         displayScore
         startDate
         finishDate
+        private
     }
 `;

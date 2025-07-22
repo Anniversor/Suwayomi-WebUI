@@ -6,7 +6,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import { TrackerType, TrackRecordType, TrackSearchType } from '@/lib/graphql/generated/graphql.ts';
+import {
+    TrackerType,
+    TrackRecordSearchFieldsFragment,
+    TrackRecordType,
+    TrackSearchType,
+} from '@/lib/graphql/generated/graphql.ts';
 
 export type MetadataTrackingSettings = {
     updateProgressAfterReading: boolean;
@@ -51,22 +56,14 @@ export type TTrackRecordBind = TTrackRecordBase &
         | 'displayScore'
         | 'startDate'
         | 'finishDate'
+        | 'private'
     >;
-export type TTrackerManga = Pick<
-    TrackSearchType,
-    | 'id'
-    | 'remoteId'
-    | 'trackingUrl'
-    | 'title'
-    | 'coverUrl'
-    | 'publishingType'
-    | 'startDate'
-    | 'publishingStatus'
-    | 'summary'
->;
+export type TTrackerManga = TrackRecordSearchFieldsFragment;
+
 export type TTrackerBase = Pick<TrackerType, 'id' | 'name' | 'icon' | 'isLoggedIn' | 'isTokenExpired'>;
 export type TTrackerSearch = TTrackerBase & Pick<TrackerType, 'authUrl'>;
-export type TTrackerBind = TTrackerBase & Pick<TrackerType, 'icon' | 'supportsTrackDeletion' | 'scores' | 'statuses'>;
+export type TTrackerBind = TTrackerBase &
+    Pick<TrackerType, 'icon' | 'supportsTrackDeletion' | 'supportsPrivateTracking' | 'scores' | 'statuses'>;
 export type TrackerIdInfo = Pick<TrackerType, 'id'>;
 export type LoggedInInfo = Pick<TrackerType, 'isLoggedIn' | 'isTokenExpired'>;
 export type TrackRecordTrackerInfo = Pick<TrackRecordType, 'trackerId'>;

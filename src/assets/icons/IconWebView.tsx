@@ -6,15 +6,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-export const DOWNLOAD_AHEAD = {
-    min: 2,
-    max: 10,
-    default: 2,
-    step: 1,
-};
+import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser';
 
-export const DOWNLOAD_CONVERSION_COMPRESSION = {
-    min: 0,
-    max: 1,
-    step: 0.01,
-};
+export const IconWebView = OpenInBrowserIcon;

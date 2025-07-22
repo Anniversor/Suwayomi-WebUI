@@ -104,7 +104,6 @@
         }
       },
       "label": {
-        "open_on_source": "Open on source",
         "select": "Select"
       },
       "mark_as_read": {
@@ -205,6 +204,12 @@
           "new_chapters": "Download new chapters"
         },
         "title": "Auto-download"
+      },
+      "conversion": {
+        "compression_level": "Compression level",
+        "description": "In case no MIME-Type is defined, the \"default\" one will be used for the conversion.",
+        "mime_type": "MIME-Type",
+        "title": "Download conversion"
       },
       "delete_chapters": {
         "label": {
@@ -349,7 +354,8 @@
       "migrate": "Migrate",
       "ok": "Ok",
       "open": "Open",
-      "open_site": "Open Site",
+      "open_browser": "Open in browser",
+      "open_webview": "Open in WebView",
       "options": "Options",
       "popular": "Popular",
       "refresh": "Refresh",
@@ -1604,7 +1610,9 @@
   "tracking": {
     "action": {
       "button": {
-        "add_tracking": "Add tracking"
+        "add_tracking": "Add tracking",
+        "track_privately": "Track privately",
+        "track_publicly": "Track publicly"
       },
       "login": {
         "label": {

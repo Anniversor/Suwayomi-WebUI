@@ -21,6 +21,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import PopupState, { bindPopover, bindTrigger } from 'material-ui-popup-state';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { requestManager } from '@/lib/requests/RequestManager.ts';
 import { EmptyViewAbsoluteCentered } from '@/modules/core/components/feedback/EmptyViewAbsoluteCentered.tsx';
 import { LoadingPlaceholder } from '@/modules/core/components/feedback/LoadingPlaceholder.tsx';
@@ -35,7 +36,82 @@ import { MangaType } from '@/lib/graphql/generated/graphql.ts';
 import { MangaIdInfo } from '@/modules/manga/Manga.types.ts';
 import { getErrorMessage } from '@/lib/HelperFunctions.ts';
 import { applyStyles } from '@/modules/core/utils/ApplyStyles.ts';
-import { Tracker, TTrackerBase } from '@/modules/tracker/Tracker.types.ts';
+import { Tracker, TrackerIdInfo, TTrackerBind } from '@/modules/tracker/Tracker.types.ts';
+import { CustomButtonIcon } from '@/modules/core/components/buttons/CustomButtonIcon.tsx';
+import { CustomTooltip } from '@/modules/core/components/CustomTooltip.tsx';
+
+const TrackButton = ({
+    mangaId,
+    selectedTrackerRemoteId,
+    trackerId,
+    closeSearchMode,
+    supportsPrivateTracking,
+}: {
+    trackerId: TrackerIdInfo['id'];
+    mangaId: MangaIdInfo['id'];
+    selectedTrackerRemoteId: string | undefined;
+    closeSearchMode: () => void;
+    supportsPrivateTracking: boolean;
+}) => {
+    const { t } = useTranslation();
+    const [bindTracker, bindTrackerMutation] = requestManager.useBindTracker();
+
+    const trackManga = (asPrivate: boolean) => {
+        if (selectedTrackerRemoteId === undefined) {
+            return;
+        }
+
+        bindTracker({
+            variables: { input: { mangaId, remoteId: selectedTrackerRemoteId, trackerId, private: asPrivate } },
+        })
+            .then(() => {
+                makeToast(t('manga.action.track.add.label.success'), 'success');
+                closeSearchMode();
+            })
+            .catch((e) => makeToast(t('manga.action.track.add.label.error'), 'error', getErrorMessage(e)));
+    };
+
+    return (
+        <Stack
+            direction="row"
+            sx={{
+                justifyContent: 'center',
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                paddingBottom: DIALOG_PADDING,
+                gap: 2,
+                px: DIALOG_PADDING,
+            }}
+        >
+            <Button
+                disabled={bindTrackerMutation.loading}
+                size="large"
+                variant="contained"
+                onClick={() => trackManga(false)}
+                sx={{ flexBasis: '65%' }}
+            >
+                {t('manga.action.track.add.label.action')}
+            </Button>
+            {supportsPrivateTracking && (
+                <CustomTooltip
+                    title={t('tracking.action.button.track_privately')}
+                    disabled={bindTrackerMutation.loading}
+                >
+                    <CustomButtonIcon
+                        disabled={bindTrackerMutation.loading}
+                        sx={{ flexBasis: '10%', maxWidth: '100px' }}
+                        variant="contained"
+                        onClick={() => trackManga(true)}
+                    >
+                        <VisibilityOffIcon />
+                    </CustomButtonIcon>
+                </CustomTooltip>
+            )}
+        </Stack>
+    );
+};
 
 export const TrackerSearch = ({
     manga,
@@ -44,7 +120,7 @@ export const TrackerSearch = ({
     trackedId,
 }: {
     manga: MangaIdInfo & Pick<MangaType, 'title'>;
-    tracker: Pick<TTrackerBase, 'id'>;
+    tracker: TTrackerBind;
     closeSearchMode: () => void;
     trackedId?: string;
 }) => {
@@ -72,8 +148,6 @@ export const TrackerSearch = ({
             trackerSearch.abortRequest(new Error(`MangaTrackerSearchCard(${tracker.id}, ${manga.id}): search changed`));
     }, [searchString]);
 
-    const [bindTracker, bindTrackerMutation] = requestManager.useBindTracker();
-
     const showTrackButton =
         useMemo(
             () =>
@@ -81,19 +155,6 @@ export const TrackerSearch = ({
                 !!searchResults.find((searchResult) => searchResult.remoteId === selectedTrackerRemoteId),
             [selectedTrackerRemoteId, searchResults],
         ) && !hasError;
-
-    const trackManga = () => {
-        if (selectedTrackerRemoteId === undefined) {
-            return;
-        }
-
-        bindTracker({ variables: { mangaId: manga.id, remoteId: selectedTrackerRemoteId, trackerId: tracker.id } })
-            .then(() => {
-                makeToast(t('manga.action.track.add.label.success'), 'success');
-                closeSearchMode();
-            })
-            .catch((e) => makeToast(t('manga.action.track.add.label.error'), 'error', getErrorMessage(e)));
-    };
 
     return (
         <>
@@ -179,27 +240,13 @@ export const TrackerSearch = ({
                         ))}
                 </List>
                 {showTrackButton && (
-                    <Stack
-                        direction="row"
-                        sx={{
-                            justifyContent: 'center',
-                            position: 'absolute',
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            paddingBottom: DIALOG_PADDING,
-                        }}
-                    >
-                        <Button
-                            disabled={bindTrackerMutation.loading}
-                            size="large"
-                            variant="contained"
-                            onClick={trackManga}
-                            sx={{ width: '75%' }}
-                        >
-                            {t('manga.action.track.add.label.action')}
-                        </Button>
-                    </Stack>
+                    <TrackButton
+                        mangaId={manga.id}
+                        trackerId={tracker.id}
+                        closeSearchMode={closeSearchMode}
+                        selectedTrackerRemoteId={selectedTrackerRemoteId}
+                        supportsPrivateTracking={tracker.supportsPrivateTracking}
+                    />
                 )}
             </DialogContent>
         </>
