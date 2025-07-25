@@ -16,3 +16,10 @@ export type MetadataBrowseSettings = {
     lastUsedSourceId: SourceIdInfo['id'] | null;
     shouldShowOnlySourcesWithResults: boolean;
 };
+
+export enum BrowseTab {
+    SOURCE_DEPRECATED = 'source',
+    SOURCES = 'sources',
+    EXTENSIONS = 'extensions',
+    MIGRATE = 'migrate',
+}
