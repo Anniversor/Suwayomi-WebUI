@@ -74,6 +74,7 @@ const maybeAddDefault = (conversions: SettingsDownloadConversion[]) => {
                   {
                       mimeType: DEFAULT_MIME_TYPE,
                       target: '',
+                      compressionLevel: null,
                   },
               ]),
         ...conversions,
@@ -136,7 +137,6 @@ const MimeTypeTextField = ({
 };
 
 const Conversion = ({
-    index,
     shouldAutoFocusMimeTypeTextField,
     conversion: { mimeType, target, compressionLevel },
     setFocusMimeTypeTextField,
@@ -144,7 +144,6 @@ const Conversion = ({
     isDuplicate,
 }: {
     shouldAutoFocusMimeTypeTextField: boolean;
-    index: number;
     conversion: SettingsDownloadConversion;
     setFocusMimeTypeTextField: (focus: boolean) => void;
     onChange: (newConversion: SettingsDownloadConversion | null) => void;
@@ -158,8 +157,6 @@ const Conversion = ({
 
     return (
         <Stack
-            // eslint-disable-next-line react/no-array-index-key
-            key={`${mimeType}-${index}`}
             sx={{
                 gap: 1,
                 flexDirection: 'row',
@@ -180,7 +177,7 @@ const Conversion = ({
                     shouldAutoFocus={shouldAutoFocusMimeTypeTextField}
                     isDefault={isDefault}
                     isDuplicate={isDuplicate}
-                    label={t(isDefault ? 'global.label.default' : 'download.settings.conversion.mime_type')}
+                    label={t('download.settings.conversion.mime_type')}
                     value={mimeType}
                     onUpdate={(value) => {
                         setFocusMimeTypeTextField(true);
@@ -197,7 +194,7 @@ const Conversion = ({
                     shouldAutoFocus={false}
                     isDefault={false}
                     isDuplicate={false}
-                    label={t('download.settings.conversion.compression_level')}
+                    label={t('download.settings.conversion.target')}
                     value={target}
                     onUpdate={(value) =>
                         onChange({
@@ -208,7 +205,7 @@ const Conversion = ({
                     }
                 />
                 <TextField
-                    label="Compression"
+                    label={t('download.settings.conversion.compression_level')}
                     value={compressionLevel ?? ''}
                     type="number"
                     error={!isCompressionLevelValid}
@@ -247,7 +244,7 @@ export const DownloadConversionSetting = ({
     updateSetting,
 }: {
     conversions: SettingsDownloadConversion[];
-    updateSetting: (conversions: SettingsDownloadConversion[]) => void;
+    updateSetting: (conversions: SettingsDownloadConversion[]) => Promise<void>;
 }) => {
     const { t } = useTranslation();
 
@@ -257,11 +254,15 @@ export const DownloadConversionSetting = ({
 
     const hasInvalidConversion = containsInvalidConversion(tmpConversions);
 
-    const hasChanged = didUpdateConversions(conversions, tmpConversions);
+    const hasChanged = didUpdateConversions(normalizeConversions(maybeAddDefault(conversions)), tmpConversions);
 
-    const onClose = () => {
-        setTmpConversions(normalizeConversions(maybeAddDefault(conversions)));
+    const onClose = (newConversions: SettingsDownloadConversion[] = conversions) => {
+        setTmpConversions(normalizeConversions(maybeAddDefault(newConversions)));
         setIsDialogOpen(false);
+    };
+
+    const onCancel = () => {
+        onClose(conversions);
     };
 
     return (
@@ -275,10 +276,10 @@ export const DownloadConversionSetting = ({
                     secondaryTypographyProps={{ style: { display: 'flex', flexDirection: 'column' } }}
                 />
             </ListItemButton>
-            <Dialog open={isDialogOpen} onClose={onClose}>
+            <Dialog open={isDialogOpen} onClose={onCancel}>
                 <DialogTitle>{t('download.settings.conversion.title')}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText sx={{ mb: 2 }}>
+                    <DialogContentText sx={{ mb: 2, whiteSpace: 'pre-line' }}>
                         {t('download.settings.conversion.description')}
                     </DialogContentText>
                     <Stack sx={{ flexDirection: 'column', gap: 3 }}>
@@ -294,7 +295,6 @@ export const DownloadConversionSetting = ({
                                     key={`${mimeType}-${index}`}
                                     conversion={conversion}
                                     isDuplicate={isDuplicate}
-                                    index={index}
                                     setFocusMimeTypeTextField={(focus) =>
                                         setFocusedMimeTypeTextFieldIndex(focus ? index : DEFAULT_FOCUS_INDEX)
                                     }
@@ -322,16 +322,23 @@ export const DownloadConversionSetting = ({
                         <Button
                             variant="outlined"
                             onClick={() => {
-                                setTmpConversions((prev) => [...prev, { mimeType: '', target: '' }]);
+                                setTmpConversions((prev) => [
+                                    ...prev,
+                                    { mimeType: '', target: '', compressionLevel: null },
+                                ]);
                             }}
                         >
                             {t('global.button.add')}
                         </Button>
                         <Stack direction="row">
-                            <Button onClick={onClose}>{t('global.button.cancel')}</Button>
+                            <Button onClick={onCancel}>{t('global.button.cancel')}</Button>
                             <Button
                                 disabled={hasInvalidConversion || !hasChanged}
-                                onClick={() => updateSetting(toValidServerConversions(tmpConversions))}
+                                onClick={() =>
+                                    updateSetting(toValidServerConversions(tmpConversions)).then(() =>
+                                        onClose(toValidServerConversions(tmpConversions)),
+                                    )
+                                }
                             >
                                 {t('global.button.ok')}
                             </Button>
