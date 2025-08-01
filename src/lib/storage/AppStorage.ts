@@ -7,6 +7,8 @@
  */
 
 // eslint-disable-next-line max-classes-per-file
+import { jsonSaveParse } from '@/lib/HelperFunctions.ts';
+
 export class Storage {
     constructor(private readonly storage: typeof window.localStorage) {}
 
@@ -15,7 +17,7 @@ export class Storage {
             return defaultValue;
         }
 
-        return JSON.parse(value);
+        return jsonSaveParse(value) ?? (value as T);
     }
 
     getItem(key: string): string | null {
