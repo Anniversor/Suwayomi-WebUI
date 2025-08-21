@@ -16,14 +16,11 @@ export abstract class BaseClient<Client, ClientConfig, Fetcher> {
     public getBaseUrl(): string {
         const { hostname, port, protocol } = window.location;
 
-        // if port is 3000 it's probably running from webpack development server
-        // return empty string to use relative URLs and go through Vite proxy
-        if (import.meta.env.DEV && port === '3000') {
-            return '';
-        }
+        const defaultUrl = import.meta.env.DEV
+            ? import.meta.env.VITE_SERVER_URL_DEFAULT
+            : `${protocol}//${hostname}:${port}`;
 
-        const inferredPort = port;
-        return AppStorage.local.getItemParsed('serverBaseURL', `${protocol}//${hostname}:${inferredPort}`);
+        return AppStorage.local.getItemParsed('serverBaseURL', defaultUrl);
     }
 
     public abstract updateConfig(config: Partial<ClientConfig>): void;

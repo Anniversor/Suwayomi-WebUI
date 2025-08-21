@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Checkout master branch
         uses: actions/checkout@v4
         with:
@@ -41,5 +46,12 @@ jobs:
       - name: Update i18n resources
         run: |
           cd master
-          echo '{"weblateToken": "${{ secrets.WEBLATE_TOKEN }}"}' > tools/scripts/tokens.json
+          echo "WEBLATE_TOKEN=${{ secrets.MY_SECRET }}" > .env
           yarn i18n:gen-resources
+
+      - name: Push changes
+        run: |
+          cd master
+          git push origin HEAD
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

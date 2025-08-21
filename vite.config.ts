@@ -14,6 +14,7 @@ import react from '@vitejs/plugin-react-swc';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import legacy from '@vitejs/plugin-legacy';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import 'dotenv/config';
 
 // eslint-disable-next-line import/no-default-export
 export default defineConfig(() => ({
@@ -21,14 +22,8 @@ export default defineConfig(() => ({
         outDir: 'build',
     },
     server: {
-        port: 3000,
-        proxy: {
-            '/api': {
-                target: 'http://192.168.71.49:4567',
-                changeOrigin: true,
-                secure: false,
-            },
-        },
+        port: Number(process.env.PORT),
+        allowedHosts: process.env.ALLOWED_HOSTS.split(',').map((s) => s.trim()),
     },
     resolve: {
         alias: {
